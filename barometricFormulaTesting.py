@@ -154,8 +154,12 @@ def showPlot3dBarErrLapseRateHeight():
     plt.show()
 
 def showPlot3dBarErrLapseRatePercentage():
+    if smallScale == 1:
+        scale = 100
+    else:
+        scale = 500
     lapseArr = np.linspace(LB*1.5,LB*0.5,45)
-    pressArr = np.linspace(PB-500,PB,251)
+    pressArr = np.linspace(PB-scale,PB,251)
 
     df = pd.DataFrame(np.array(np.meshgrid(lapseArr, pressArr)).T.reshape(-1,2), columns=['lapse','pressure'])
 
@@ -163,7 +167,7 @@ def showPlot3dBarErrLapseRatePercentage():
 
     ax = plt.figure().add_subplot(projection='3d')
 
-    ax.plot_trisurf(df.pressure, 100*(df.lapse-LB)/LB, percentDiffFromBarometric(df.pressure, 0, df.height), cmap="seismic", linewidth=0, antialiased = False)
+    ax.plot_trisurf(df.pressure, 100*(df.lapse-LB)/LB, percentDiffFromBarometric(df.pressure, 0, df.height), cmap="jet", linewidth=0, antialiased = False)
 
     ax.invert_yaxis()
 
@@ -171,7 +175,7 @@ def showPlot3dBarErrLapseRatePercentage():
     ax.set_ylabel("Difference in Lapse Rate (%)")
     ax.set_zlabel("Difference in Calculated Height (%)")
  
-    ax.view_init(20,40)
+    ax.view_init(20,60)
 
     plt.show()
 
@@ -192,7 +196,7 @@ def showPlotBarRefTemp():
         plt.plot(dataSlice.press,dataSlice.height, label = "Ref Temp: "+str(temp)+"K")
     
     plt.legend(loc = "upper left")
-    plt.xlabel("Measured Press (mbar)")
+    plt.xlabel("Measured Pressure (mbar)")
     plt.ylabel("Calculated Height (m)")
     plt.grid()
     plt.gca().invert_xaxis()
@@ -204,19 +208,23 @@ def showPlotBarErrRefTemp():
 
     standardHeight = inverseBarometricFormula(900, TB)
     err = 100*(inverseBarometricFormula(900, tempArr) - standardHeight)/standardHeight
-    plt.plot(tempArr, err)
+    plt.plot(100*(tempArr-TB)/(TB-273.15), err)
     
-    plt.xlabel("Reference Temp (K)")
-    plt.ylabel("Percent Error (%)")
-    plt.gca().set_xticks(tempArr)
+    plt.xlabel("Difference in Reference Temperature in °C (%)")
+    plt.ylabel("Difference in Calculated Height (%)")
+    #plt.gca().set_xticks(tempArr)
     plt.axhline(y=0, color="black", lw=0.5)
-    plt.axvline(x=TB, color="black", lw=0.5)
+    #plt.axvline(x=TB, color="black", lw=0.5)
     plt.grid()
 
     plt.show()
 
 def showPlotBarVHyp():
-    pressArr = np.linspace(PB-500,PB,5010)
+    if smallScale == 1:
+        scale = 100
+    else:
+        scale = 500
+    pressArr = np.linspace(PB-scale,PB,5010)
 
     df = pd.DataFrame(pressArr, columns=["pressure"])
     df["height_b"] = df.apply(lambda x: inverseBarometricFormula(x.pressure, TB), axis=1)
@@ -228,8 +236,8 @@ def showPlotBarVHyp():
 
     plt.plot(df.pressure, df.height_b, label="Barometric Height")
     plt.plot(df.pressure, df.height_h_lapse, label="Hypsometric Height (At lapse temp)")
-    plt.plot(df.pressure, df.height_h_lapse_p10, label="Hypsometric Height (At lapse temp + 10C)")
-    plt.plot(df.pressure, df.height_h_lapse_m10, label="Hypsometric Height (At lapse temp - 10C)")
+    #plt.plot(df.pressure, df.height_h_lapse_p10, label="Hypsometric Height (At lapse temp + 10C)")
+    #plt.plot(df.pressure, df.height_h_lapse_m10, label="Hypsometric Height (At lapse temp - 10C)")
     #plt.plot(df.pressure, df.height_h_nolapse, label="Hypsometric Height (Without lapse)")
     #plt.plot(df.pressure, df.lapse_temp)
 
@@ -258,7 +266,7 @@ def showPlotBarLapseRate():
     #plt.plot(df.pressure, df.height_h_lapse, label="Hypsometric Height (using standard lapse temp)")
 
     plt.legend(loc = "upper left")
-    plt.xlabel("Measured Press (mbar)")
+    plt.xlabel("Measured Pressure (mbar)")
     plt.ylabel("Calculated Height (m)")
     plt.grid()
     plt.gca().invert_xaxis()
@@ -266,21 +274,25 @@ def showPlotBarLapseRate():
     plt.show()
 
 def showPlotBarErrLapseRatePercentage():
-    pressArr = np.linspace(PB-500,PB,5010)
+    if smallScale == 1:
+        scale = 100
+    else:
+        scale = 500
+    pressArr = np.linspace(PB-scale,PB,5010)
 
     df = pd.DataFrame(pressArr, columns=["pressure"])
     df["height_b"] = df.apply(lambda x: inverseBarometricFormulaLapse(x.pressure, LB), axis=1)
 
     numLines = 5
-    lapseArr = np.linspace(LB*1.5,LB*-0.5, numLines)
+    lapseArr = np.linspace(LB*1.5,LB*0.5, numLines)
     for line in range(numLines):
         lapse = lapseArr[line]
         plt.plot(df.pressure, 100*(df.apply(lambda x: inverseBarometricFormulaLapse(x.pressure, lapse), axis=1)-df.height_b)/df.height_b, label = "Difference in Lapse Rate: {:.0f}%".format(100*(lapse-LB)/LB))
     
 
     plt.legend(loc = "upper left")
-    plt.xlabel("Measured Press (mbar)")
-    plt.ylabel("Difference in Calculated Height (m)")
+    plt.xlabel("Measured Pressure (mbar)")
+    plt.ylabel("Difference in Calculated Height (%)")
     plt.grid()
     plt.gca().invert_xaxis()
 
@@ -295,6 +307,8 @@ plotBarLapseRate = 0
 plot3dBarErrLapseRateHeight = 0
 plot3dBarErrLapseRatePercentage = 1
 plotBarErrLapseRatePercentage = 0
+
+smallScale = 1
 
 if plot3dBarErrRefTemp == 1:
     showPlot3dBarErrRefTemp()
