@@ -158,15 +158,18 @@ def parseDatFile(fileName, combine):
     for line in gpsByteLines:
         #calculate length of data in line, big endian in old format, little endian otherwise
         if oldFormat:
-            lineEnd = (line[1]<<8) + line[2]
+            lineEnd = (line[0]<<8) + line[1]
         else:
             lineEnd = line[1] + (line[2]<<8)
 
         #empty array for indexes of observables in line
         obsIndexArr = []
 
-        #starting index is 3
-        index = 3
+        #starting index is 2 for old format, 3 otherwise
+        if oldFormat:
+            index = 2
+        else:
+            index = 3
         #step through line until the end
         while index < lineEnd:
             #append obs index
