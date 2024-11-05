@@ -3,7 +3,7 @@ from os.path import isfile, join
 
 def processGSMLog(datFileName):
     prefix = "GSM"
-    if any(tag in datFileName.lower() for tag in ("tag10204","tag10215","tag14114","tag14115","tag14121","tag14122")):
+    if any(tag in datFileName.lower() for tag in ("tag10204","tag10215","tag14114","tag14115","tag14121","tag14122","tag14297","tag14298","tag14299","tag14300")):
         prefix = "ONO"
     elif any(tag in datFileName.lower() for tag in ("tag14113","tag14113")):
         prefix = "NOSIM"

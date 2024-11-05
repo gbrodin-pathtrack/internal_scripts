@@ -273,7 +273,7 @@ def showPlotBarLapseRate():
 
     plt.show()
 
-def showPlotBarErrLapseRatePercentage():
+def showPlotBarErrLapseRatePercentageFixedLapse():
     if smallScale == 1:
         scale = 100
     else:
@@ -287,14 +287,43 @@ def showPlotBarErrLapseRatePercentage():
     lapseArr = np.linspace(LB*1.5,LB*0.5, numLines)
     for line in range(numLines):
         lapse = lapseArr[line]
-        plt.plot(df.pressure, 100*(df.apply(lambda x: inverseBarometricFormulaLapse(x.pressure, lapse), axis=1)-df.height_b)/df.height_b, label = "Difference in Lapse Rate: {:.0f}%".format(100*(lapse-LB)/LB))
+        plt.plot(df.pressure, 100*(df.apply(lambda x: inverseBarometricFormulaLapse(x.pressure, lapse), axis=1)-df.height_b)/df.height_b, label = "{:+.0f}%".format(100*(lapse-LB)/LB))
     
-
-    plt.legend(loc = "upper left")
+    legend = plt.legend(loc = "upper left",title="Difference in Lapse Rate:")
+    legend._legend_box.align = "left"
     plt.xlabel("Measured Pressure (mbar)")
     plt.ylabel("Difference in Calculated Height (%)")
     plt.grid()
     plt.gca().invert_xaxis()
+
+    plt.show()
+
+def showPlotBarErrLapseRatePercentageFixedPressure():
+    lapseArr = np.linspace(LB*1.5,LB*0.5, 99)
+    numLines = 5
+    if smallScale == 1:
+        scale = 100
+    else:
+        scale = 500
+    pressArr = np.linspace(PB-scale,PB,numLines)
+    
+    df = pd.DataFrame(np.array(np.meshgrid(lapseArr, pressArr)).T.reshape(-1,2), columns=["lapse","pressure"])
+    df["height_b"] = df.apply(lambda x: inverseBarometricFormulaLapse(x.pressure, LB), axis=1)
+
+    
+    for line in range(numLines):
+        press = pressArr[line]
+        calcHeight = df.apply(lambda x: inverseBarometricFormulaLapse(press, x.lapse), axis=1)
+        standardHeight = df.apply(lambda x: inverseBarometricFormulaLapse(press, LB), axis=1)
+        calcHeight[calcHeight == 0] = 1
+        standardHeight[standardHeight == 0] = 1
+        plt.plot(100*(df.lapse-LB)/LB, 100*(calcHeight-standardHeight)/standardHeight, label = "{:.0f} mbar".format(press))
+    
+    legend = plt.legend(loc = "upper left",title="Pressure:")
+    legend._legend_box.align = "left"
+    plt.xlabel("Difference in Lapse Rate (%)")
+    plt.ylabel("Difference in Calculated Height (%)")
+    plt.grid()
 
     plt.show()
 
@@ -305,8 +334,9 @@ plotBarVHyp = 0
 plot3dBarVHypTempDiff = 0
 plotBarLapseRate = 0
 plot3dBarErrLapseRateHeight = 0
-plot3dBarErrLapseRatePercentage = 1
-plotBarErrLapseRatePercentage = 0
+plot3dBarErrLapseRatePercentage = 0
+plotBarErrLapseRatePercentageFixedLapse = 0
+plotBarErrLapseRatePercentageFixedPressure = 1
 
 smallScale = 1
 
@@ -326,5 +356,7 @@ elif plot3dBarErrLapseRateHeight == 1:
     showPlot3dBarErrLapseRateHeight()
 elif plot3dBarErrLapseRatePercentage == 1:
     showPlot3dBarErrLapseRatePercentage()
-elif plotBarErrLapseRatePercentage == 1:
-    showPlotBarErrLapseRatePercentage()
+elif plotBarErrLapseRatePercentageFixedLapse == 1:
+    showPlotBarErrLapseRatePercentageFixedLapse()
+elif plotBarErrLapseRatePercentageFixedPressure == 1:
+    showPlotBarErrLapseRatePercentageFixedPressure()

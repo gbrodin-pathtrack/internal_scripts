@@ -68,5 +68,5 @@ for byte in bytes:
     checkB += checkA
     checkB &= 0xFF
 
-print("0x{:02x}".format(checkA).upper().replace('X','x')+",","0x{:02x}".format(checkB).upper().replace('X','x'),"//check sum")
+print("check sum:","0x{:02x}".format(checkA).upper().replace('X','x')+",","0x{:02x}".format(checkB).upper().replace('X','x'))
 print("length:",len(bytes)+4)
