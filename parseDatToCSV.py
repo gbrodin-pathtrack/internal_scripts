@@ -72,7 +72,14 @@ def parseObs(line, index, obsNum):
     index += 1
     obs["vbatt"] = line[index]
     index += 1
-    obs["TTF"] = line[index]
+    if oldFormat:
+        #old format ttf is stored as seconds, any 0 second fixes are actually very close to 1 second
+        obs["TTF"] = line[index]
+        if obs["TTF"] == 0:
+            obs["TTF"] = 1
+    else:
+        #new format ttf is stored as 10ths of seconds
+        obs["TTF"] = line[index]/10
     index += 1
 
     #calculate end index of obs
