@@ -1,13 +1,12 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import datetime
 from os import listdir
 from os.path import isfile, join
 import sys
 
-GRAPH = False
 #Set to true to display graphs, output file won't be generated
+GRAPH = False
 
 #some graphs only support a single file being graphed, they will set this and exit early
 singleGraph = False
@@ -24,21 +23,29 @@ def processSatsFile(fileName):
 
     #read file into data frame
     fullDF = pd.read_csv(fileName)
+    #convert datetime string to datetime
+    fullDF["datetime"] = pd.to_datetime(fullDF["datetime"])
 
-    #get rows with satelite ID of 0, these are dummy rows with only obs info attached
-    obsDF = fullDF.loc[fullDF["ID"] == 0]
+    #create new dataframe from rows with satelite ID of 0, these are dummy rows with only obs info attached
+    obsDF = pd.DataFrame(fullDF.loc[fullDF["ID"] == 0]).set_index(["obsNum"])
+    #drop sat info columns
+    obsDF.drop([col for col in obsDF.columns if col in ["ID","CNR","codePhase","dopplerMS","dopplerHz"]],axis=1,inplace=True)
+
+    #drop dummy rows from data frame
+    fullDF.drop(fullDF.loc[fullDF["ID"] == 0].index, inplace=True)
+    fullDF.reset_index(inplace=True, drop=True)
 
     print("-"*50)
     print("Cumulative stats:")
     print("-"*50)
-    if("dopplerMS" in fullDF.columns):
-        print("Max dopplerMS:",fullDF["dopplerMS"].max())
-        print("Min dopplerMS:",fullDF["dopplerMS"].min())
-        print()
-    if("dopplerHz" in fullDF.columns):
-        print("Max dopplerHz:",fullDF["dopplerHz"].max())
-        print("Min dopplerHz:",fullDF["dopplerHz"].min())
-        print()
+    # if("dopplerMS" in fullDF.columns):
+    #     print("Max dopplerMS:",fullDF["dopplerMS"].max())
+    #     print("Min dopplerMS:",fullDF["dopplerMS"].min())
+    #     print()
+    # if("dopplerHz" in fullDF.columns):
+    #     print("Max dopplerHz:",fullDF["dopplerHz"].max())
+    #     print("Min dopplerHz:",fullDF["dopplerHz"].min())
+    #     print()
 
     #only print battery stats for individual tag files
     if(fileName.startswith("Obs")):
@@ -48,15 +55,14 @@ def processSatsFile(fileName):
     totalTime = np.sum(obsDF["TTF"])
     totalAttempts = len(obsDF["numSV"])
     totalSuccesses = len(obsDF.loc[obsDF["numSV"] > 4])
-    print("Total on time: %.1fs" % totalTime)
-    print()
-    print("Total attempts: %d" % totalAttempts)
-    print()
-    print("Total fixes: %d" % totalSuccesses)
+    print("Total:")
+    print(" - GPS on time: %.1fs" % totalTime)
+    print(" - GPS attempts: %d" % totalAttempts)
+    print(" - GPS successes: %d" % totalSuccesses)
     print()
     print("Success Rate: %.1f%%" % ((totalSuccesses/totalAttempts)*100))
     print()
-    print("Time per fix: %.1fs" % (totalTime/totalSuccesses))
+    print("On time per fix: %.2fs" % (totalTime/totalSuccesses))
     print()
 
 
@@ -106,6 +112,7 @@ def processSatsFile(fileName):
     print("Per satellite stats:")
     print("-"*50)
 
+    #get rows with relevant sat IDs for each GNSS
     gpsSats = fullDF.loc[(1 <= fullDF["ID"]) & (fullDF["ID"] <= 32)]
     beiSats = fullDF.loc[(101 <= fullDF["ID"]) & (fullDF["ID"] <= 163)]
     galSats = fullDF.loc[(201 <= fullDF["ID"]) & (fullDF["ID"] <= 236)]
@@ -134,6 +141,28 @@ def processSatsFile(fileName):
         print(" - 10th Percentile: %.1f" % np.percentile(galSats["CNR"], 10))
         print(" - Standard Deviation: %.1f" % np.std(galSats["CNR"]))
         print()
+
+    print("-"*50)
+    print("Timing stats:")
+    print("-"*50)
+
+    obsDF["timediff"] = obsDF["datetime"].diff(1)
+
+    print("Time between fixes:")
+    print(" - Average: %.2fs" % (np.mean(obsDF["timediff"])).total_seconds())
+    print(" - Maximum: %.2fs" % obsDF["timediff"].max().total_seconds())
+    print(" - Minimum: %.2fs" % obsDF["timediff"].min().total_seconds())
+    print()
+
+    #only warn about clock reset in tag specific file
+    clockResets = obsDF.loc[obsDF["timediff"].dt.total_seconds() < 0]
+    if(len(clockResets)>0 and fileName.startswith("Obs")):
+        print()
+        print("WARNING: Negative time diff(s):")
+        print()
+        print(clockResets)
+        print()
+    
     
     #Do graph stuff
     if GRAPH:
@@ -190,12 +219,11 @@ class Logger(object):
 sys.stdout = Logger()
 
 #run processSatsFile on every file in root directory that ends with "_sats.csv"
-onlyfiles = [f for f in listdir("./") if isfile(join("./", f))]
+onlyfiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_sats.csv")]
 for file in onlyfiles:
-    if file.endswith("_sats.csv"):
-        processSatsFile(file)
-        if singleGraph:
-            break
+    processSatsFile(file)
+    if singleGraph:
+        break
 
 if GRAPH:
     plt.show()
