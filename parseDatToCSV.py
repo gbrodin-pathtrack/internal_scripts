@@ -3,19 +3,17 @@ import datetime
 from os import listdir, remove
 from os.path import isfile, join, exists
 
-#set to True to combine all dat files to one CSV for processing together
-combineFiles = True
 #set to True if using packed time with subseconds
 packedTime = False
 #set to True if dopplerMS was recorded per sat
-dopplerMS = True
+dopplerMS = False
 #set to True if dopplerHz was recorded per sat
-dopplerHz = True
+dopplerHz = False
 #set to True to parse old GPS formated data
 oldFormat = False
 
 #set to GPS obs header byte (not used for old format)
-OBS_LINE_HEADER_BYTE = 255
+OBS_LINE_HEADER_BYTE = 0x80
 
 if oldFormat:
     packedTime = False
@@ -61,7 +59,7 @@ def parseObs(line, index, obsNum):
         obs["subsecond"] = 0
     
     #convert time tag to datetime
-    obs["datetime"] = datetime.datetime(year=2000+obs["year"], month=obs["month"], day=obs["day"], hour=obs["hour"], minute=obs["minute"], second=obs["second"], microsecond=15625*obs["subsecond"])
+    obs["fixTime"] = datetime.datetime(year=2000+obs["year"], month=obs["month"], day=obs["day"], hour=obs["hour"], minute=obs["minute"], second=obs["second"], microsecond=15625*obs["subsecond"])
 
     #step past time tag
     index += OBS_NUM_SV_POS
@@ -191,8 +189,8 @@ def parseDatFile(fileName, combine):
     #reorder columns a bit
     idCol = satsDF.pop("ID")
     satsDF.insert(satsDF.columns.get_loc("CNR"),"ID",idCol)
-    datetimeCol = satsDF.pop("datetime")
-    satsDF.insert(satsDF.columns.get_loc("obsNum")+1, "datetime", datetimeCol)
+    datetimeCol = satsDF.pop("fixTime")
+    satsDF.insert(satsDF.columns.get_loc("obsNum")+1, "fixTime", datetimeCol)
 
     #append to combined file, write in header if needed
     if combine:
@@ -208,7 +206,7 @@ if exists("combined_sats.csv"):
     remove("combined_sats.csv")
             
 #run parseDatFile on every file in root directory that starts with "Obs" and ends with ".dat"
-onlyfiles = [f for f in listdir("./") if isfile(join("./", f)) and f.startswith("Obs") and f.endswith(".dat")]
-for file in onlyfiles:
+wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.startswith("Obs") and f.endswith(".dat")]
+for file in wantedFiles:
     #only produce a combined file if there are more than 1 dat files
-    parseDatFile(file, len(onlyfiles)>1)
+    parseDatFile(file, len(wantedFiles)>1)

@@ -24,7 +24,7 @@ def processSatsFile(fileName):
     #read file into data frame
     fullDF = pd.read_csv(fileName)
     #convert datetime string to datetime
-    fullDF["datetime"] = pd.to_datetime(fullDF["datetime"])
+    fullDF["fixTime"] = pd.to_datetime(fullDF["fixTime"])
 
     #create new dataframe from rows with satelite ID of 0, these are dummy rows with only obs info attached
     obsDF = pd.DataFrame(fullDF.loc[fullDF["ID"] == 0]).set_index(["obsNum"])
@@ -60,7 +60,7 @@ def processSatsFile(fileName):
     print(" - GPS attempts: %d" % totalAttempts)
     print(" - GPS successes: %d" % totalSuccesses)
     print()
-    print("Success Rate: %.1f%%" % ((totalSuccesses/totalAttempts)*100))
+    print("Success Rate: %.2f%%" % ((totalSuccesses/totalAttempts)*100))
     print()
     print("On time per fix: %.2fs" % (totalTime/totalSuccesses))
     print()
@@ -142,26 +142,33 @@ def processSatsFile(fileName):
         print(" - Standard Deviation: %.1f" % np.std(galSats["CNR"]))
         print()
 
-    print("-"*50)
-    print("Timing stats:")
-    print("-"*50)
+    #only print timing stats for individual tag files
+    if(fileName.startswith("Obs")):
+        print("-"*50)
+        print("Timing stats:")
+        print("-"*50)
 
-    obsDF["timediff"] = obsDF["datetime"].diff(1)
+        obsDF["startTime"] = obsDF["fixTime"] - pd.to_timedelta(obsDF["TTF"],unit="s")
+        obsDF["startTimeDiff"] = obsDF["startTime"].diff(1)
 
-    print("Time between fixes:")
-    print(" - Average: %.2fs" % (np.mean(obsDF["timediff"])).total_seconds())
-    print(" - Maximum: %.2fs" % obsDF["timediff"].max().total_seconds())
-    print(" - Minimum: %.2fs" % obsDF["timediff"].min().total_seconds())
-    print()
+        print("Time between GPS attempt starts:")
+        print(" - Average: %.2fs" % (np.mean(obsDF["startTimeDiff"])).total_seconds())
+        print(" - Maximum: %.2fs" % obsDF["startTimeDiff"].max().total_seconds())
+        print(" - Minimum: %.2fs" % obsDF["startTimeDiff"].min().total_seconds())
+        print()
+        #Comment in to see obs with max and min time diff
+        # print(obsDF.iloc[obsDF["startTimeDiff"].idxmax()-1 : obsDF["startTimeDiff"].idxmax()+2])
+        # print()
+        # print(obsDF.iloc[obsDF["startTimeDiff"].idxmin()-1 : obsDF["startTimeDiff"].idxmin()+2])
+        # print()
 
-    #only warn about clock reset in tag specific file
-    clockResets = obsDF.loc[obsDF["timediff"].dt.total_seconds() < 0]
-    if(len(clockResets)>0 and fileName.startswith("Obs")):
-        print()
-        print("WARNING: Negative time diff(s):")
-        print()
-        print(clockResets)
-        print()
+        clockResets = obsDF.loc[obsDF["startTimeDiff"].dt.total_seconds() < 0]
+        if(len(clockResets)>0 and fileName.startswith("Obs")):
+            print()
+            print("WARNING: Negative time diff(s):")
+            print()
+            print(clockResets)
+            print()
     
     
     #Do graph stuff
@@ -171,8 +178,11 @@ def processSatsFile(fileName):
         # plt.title("Time to fix relative frequency")
         # plt.ylabel("Relative frequency")
         # plt.xlabel("Time to fix (s)")
-        # plt.plot(ttfCounts.index, ttfCounts.values, label=fileName)
+        # #plt.plot(ttfCounts.index, ttfCounts.values, label=fileName)
+        # plt.bar(ttfCounts.index, ttfCounts.values, label=fileName, width=0.05)
         # plt.legend(loc="best")
+
+        # singleGraph = True
 
         #plot success rate and on time per fix for different timeout options
         timeoutOptions = np.arange(0.1,20.1,0.1)
@@ -213,14 +223,17 @@ class Logger(object):
         self.terminal.write(message)
         self.file.write(message)  
     def flush(self):
+        self.terminal.flush()
         self.file.flush()
 
-#duplicate print messages into an output file
-sys.stdout = Logger()
-
 #run processSatsFile on every file in root directory that ends with "_sats.csv"
-onlyfiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_sats.csv")]
-for file in onlyfiles:
+wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_sats.csv")]
+
+#duplicate print messages into an output file, only if there are files to process
+if len(wantedFiles) > 0:
+    sys.stdout = Logger()
+
+for file in wantedFiles:
     processSatsFile(file)
     if singleGraph:
         break
