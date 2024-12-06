@@ -14,8 +14,8 @@ def decode16BitPress(value, sensor):
     elif sensor == 2: #large com
         if value <= 55500:
             return value * 0.02
-        if value > 55500:
-            return 1100 + (value-55500)
+        else:
+            return value-55500
 
 def parseDatFile(fileName):
     with open(fileName,"r") as f:
@@ -50,7 +50,7 @@ def parseDatFile(fileName):
         index += 1    
 
         year = line[index] & 0x7F
-        month = ((line[index] & 0x80) >> 7) + ((line[index+1] & 0x05) << 1)
+        month = ((line[index] & 0x80) >> 7) + ((line[index+1] & 0x07) << 1)
         day = (line[index+1] & 0xF8) >> 3
         hour = line[index+2] & 0x1F
         minute = ((line[index+2] & 0xE0) >> 5) + ((line[index+3] & 0x07) << 3)
@@ -66,7 +66,7 @@ def parseDatFile(fileName):
             index += 2
             temp = ((line[index])*0.5)-40
             index += 1
-            pressObs = {"datetime":startDatetime, "pressure":press,"temp":temp}
+            pressObs = {"headerTime":startDatetime,"datetime":startDatetime, "pressure":press,"temp":temp}
             tags[tagID].append(pressObs)
             
             while(index < length):
@@ -78,7 +78,7 @@ def parseDatFile(fileName):
                 index += 2
                 temp = ((line[index])*0.5)-40
                 index += 1
-                pressObs = {"datetime":obsDatetime, "pressure":press,"temp":temp}
+                pressObs = {"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime, "pressure":press,"temp":temp}
                 tags[tagID].append(pressObs)
 
         if format == 1:
@@ -87,7 +87,7 @@ def parseDatFile(fileName):
                 continue
             press = (line[index] * 40) + 1000
             index += 1
-            pressObs = {"datetime":startDatetime, "pressure":press}
+            pressObs = {"headerTime":startDatetime,"datetime":startDatetime, "pressure":press}
             tags[tagID].append(pressObs)
             
             while(index < length):
@@ -97,7 +97,7 @@ def parseDatFile(fileName):
                 press = (line[index] * 40) + 1000
                 index += 1
                 
-                pressObs = {"datetime":obsDatetime, "pressure":press}
+                pressObs = {"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime, "pressure":press}
                 tags[tagID].append(pressObs)
 
         if format == 2:
@@ -107,7 +107,7 @@ def parseDatFile(fileName):
             press = (line[index] * 40) + 1000
             index += 1
             temp = subsecond
-            pressObs = {"datetime":startDatetime, "pressure":press,"temp":temp}
+            pressObs = {"headerTime":startDatetime,"datetime":startDatetime, "pressure":press,"temp":temp}
             tags[tagID].append(pressObs)
             
             while(index < length):
@@ -118,13 +118,13 @@ def parseDatFile(fileName):
                 press = (line[index] * 40) + 1000
                 index += 1
                 
-                pressObs = {"datetime":obsDatetime, "pressure":press,"temp":temp}
+                pressObs = {"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime, "pressure":press,"temp":temp}
                 tags[tagID].append(pressObs)
         
         if format == 3:
             temp = ((line[index] + (subsecond << 8)) * 0.08) - 40
             index += 1
-            pressObs = {"datetime":startDatetime,"temp":temp}
+            pressObs = {"headerTime":startDatetime,"datetime":startDatetime,"temp":temp}
             tags[tagID].append(pressObs)
             
             while(index < length):
@@ -133,7 +133,7 @@ def parseDatFile(fileName):
                 index += 3
                 obsDatetime = startDatetime + datetime.timedelta(seconds=offset)
                 
-                pressObs = {"datetime":obsDatetime,"temp":temp}
+                pressObs = {"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime,"temp":temp}
                 tags[tagID].append(pressObs)
         
         if format == 4:
@@ -168,7 +168,11 @@ def parseDatFile(fileName):
             print("Min temp:",df["temp"].min())
         print("Max time diff:",df["timeDiff"].max())
         print("Min time diff:",df["timeDiff"].min())
-        print()
+        #print()
+        #print(df.iloc[df["timeDiff"].idxmin()-3 : df["timeDiff"].idxmin()+4])
+        #print(df[df["timeDiff"] == df["timeDiff"].min()])
+        #print(df[df["offset"].isna()])
+        #print()
 
 
 #run parseDatFile on every file in root directory that starts with "Obs" and ends with ".dat"

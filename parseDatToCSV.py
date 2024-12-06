@@ -4,7 +4,7 @@ from os import listdir, remove
 from os.path import isfile, join, exists
 
 #set to True if using packed time with subseconds
-packedTime = False
+packedTime = True
 #set to True if dopplerMS was recorded per sat
 dopplerMS = False
 #set to True if dopplerHz was recorded per sat
@@ -13,7 +13,7 @@ dopplerHz = False
 oldFormat = False
 
 #set to GPS obs header byte (not used for old format)
-OBS_LINE_HEADER_BYTE = 0x80
+OBS_LINE_HEADER_BYTE = 0x90
 
 if oldFormat:
     packedTime = False
@@ -33,7 +33,39 @@ if dopplerMS:
 if dopplerHz:
     OBS_SAT_LENGTH += 4
 
-def parseObs(line, index, obsNum):
+def validateTimeTag(obs):
+    ret = True
+    if(obs["year"] > 99):
+        print("ERROR: Year not in 0-99")
+        print("Year:",obs["year"])
+        ret = False
+    if(obs["month"] > 12 or obs["month"] == 0):
+        print("ERROR: Month not in 1-12")
+        print("Month:",obs["month"])
+        ret = False
+    if(obs["day"] > 31 or obs["day"] == 0):
+        print("ERROR: Day not in 1-31")
+        print("Day:",obs["day"])
+        ret = False
+    if(obs["hour"] > 23):
+        print("ERROR: Hour not in 0-23")
+        print("Hour:",obs["hour"])
+        ret = False
+    if(obs["minute"] > 59):
+        print("ERROR: Minute not in 0-59")
+        print("Minute:",obs["minute"])
+        ret = False
+    if(obs["second"] > 59):
+        print("ERROR: Second not in 0-59")
+        print("Second:",obs["second"])
+        ret = False
+    if(obs["subsecond"] > 63):
+        print("ERROR: Subsecond not in 0-59")
+        print("Subsecond:",obs["subsecond"])
+        ret = False
+    return ret
+
+def parseObs(line, index, obsNum, filename, linenumber):
     #empty dict for obs info
     obs = {"obsNum":obsNum}
     #counters for number of each satelite type
@@ -43,7 +75,7 @@ def parseObs(line, index, obsNum):
     #get time tag out of obs
     if packedTime:
         obs["year"] = line[index] & 0x7F
-        obs["month"] = ((line[index] & 0x80) >> 7) + ((line[index+1] & 0x05) << 1)
+        obs["month"] = ((line[index] & 0x80) >> 7) + ((line[index+1] & 0x07) << 1)
         obs["day"] = (line[index+1] & 0xF8) >> 3
         obs["hour"] = line[index+2] & 0x1F
         obs["minute"] = ((line[index+2] & 0xE0) >> 5) + ((line[index+3] & 0x07) << 3)
@@ -59,8 +91,11 @@ def parseObs(line, index, obsNum):
         obs["subsecond"] = 0
     
     #convert time tag to datetime
-    obs["fixTime"] = datetime.datetime(year=2000+obs["year"], month=obs["month"], day=obs["day"], hour=obs["hour"], minute=obs["minute"], second=obs["second"], microsecond=15625*obs["subsecond"])
-
+    if(validateTimeTag(obs)):
+        obs["fixTime"] = datetime.datetime(year=2000+obs["year"], month=obs["month"], day=obs["day"], hour=obs["hour"], minute=obs["minute"], second=obs["second"], microsecond=15625*obs["subsecond"])
+    else:
+        print("Error in observable in",filename,"on line number",linenumber,"index",index)
+        print()
     #step past time tag
     index += OBS_NUM_SV_POS
 
@@ -152,6 +187,7 @@ def parseDatFile(fileName, combine):
     #empty arrays for observable and satelite information
     satArr = []
 
+    linenum = 0
     #for each gps line
     for line in gpsByteLines:
         #calculate length of data in line, big endian in old format, little endian otherwise
@@ -178,10 +214,11 @@ def parseDatFile(fileName, combine):
         #for each observable in the line
         for index in obsIndexArr:
             #parse out obs info and satelite info
-            subSatArr = parseObs(line, index, obsNum)
+            subSatArr = parseObs(line, index, obsNum, fileName, linenum)
             obsNum+= 1
             #add info to lists
             satArr.extend(subSatArr)
+        linenum += 1
     
     #generate data frames of info and output to CSV for further processing
     satsDF = pd.DataFrame(satArr)

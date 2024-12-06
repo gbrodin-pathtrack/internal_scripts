@@ -14,6 +14,9 @@ singleGraph = False
 #ADC ref is 1V, 8bit scale = 255 divisions, voltage read is 1/5 of actual vbatt so * 5
 VBATT_SCALE = (5/255)
 
+firstFixTimes = []
+firstStartTimes = []
+
 def processSatsFile(fileName):
     global singleGraph
     #show which file is being processed
@@ -65,6 +68,10 @@ def processSatsFile(fileName):
     print("On time per fix: %.2fs" % (totalTime/totalSuccesses))
     print()
 
+    totalFailGPSConfig = len(obsDF[obsDF["TTF"] == 250])
+    if totalFailGPSConfig:
+        print("WARNING: %d GPS attempts failed to config GPS" %totalFailGPSConfig)
+
 
     print("-"*50)
     print("Per observable stats:")
@@ -84,7 +91,7 @@ def processSatsFile(fileName):
     print(" - Standard Deviation: %.1f" % np.std(obsDF["numSV"]))
     print()
 
-    if(obsDF["numGPS"].max()>0):
+    if(obsDF["numGPS"].max()>0 and (obsDF["numGalileo"].max()>0 or obsDF["numBeiDou"].max()>0)):
         print("GPS SVs:")
         print(" - Average: %.2f" % np.mean(obsDF["numGPS"]))
         print(" - 90th Percentile: %.1f" % np.percentile(obsDF["numGPS"], 90))
@@ -121,24 +128,30 @@ def processSatsFile(fileName):
     if(len(gpsSats)):
         print("GPS CNR:")
         print(" - Average: %.2f" % np.mean(gpsSats["CNR"]))
+        print(" - Maximum: %.1f" % gpsSats["CNR"].max())
         print(" - 90th Percentile: %.1f" % np.percentile(gpsSats["CNR"], 90))
         print(" - 10th Percentile: %.1f" % np.percentile(gpsSats["CNR"], 10))
+        print(" - Minimum: %.1f" % gpsSats["CNR"].min())
         print(" - Standard Deviation: %.1f" % np.std(gpsSats["CNR"]))
         print()
 
     if(len(beiSats)):
         print("BeiDou CNR:")
         print(" - Average: %.2f" % np.mean(beiSats["CNR"]))
+        print(" - Maximum: %.1f" % beiSats["CNR"].max())
         print(" - 90th Percentile: %.1f" % np.percentile(beiSats["CNR"], 90))
         print(" - 10th Percentile: %.1f" % np.percentile(beiSats["CNR"], 10))
+        print(" - Minimum: %.1f" % beiSats["CNR"].min())
         print(" - Standard Deviation: %.1f" % np.std(beiSats["CNR"]))
         print()
 
     if(len(galSats)):
         print("Galileo CNR:")
         print(" - Average: %.2f" % np.mean(galSats["CNR"]))
+        print(" - Maximum: %.1f" % galSats["CNR"].max())
         print(" - 90th Percentile: %.1f" % np.percentile(galSats["CNR"], 90))
         print(" - 10th Percentile: %.1f" % np.percentile(galSats["CNR"], 10))
+        print(" - Minimum: %.1f" % galSats["CNR"].min())
         print(" - Standard Deviation: %.1f" % np.std(galSats["CNR"]))
         print()
 
@@ -149,20 +162,29 @@ def processSatsFile(fileName):
         print("-"*50)
 
         obsDF["startTime"] = obsDF["fixTime"] - pd.to_timedelta(obsDF["TTF"],unit="s")
-        obsDF["startTimeDiff"] = obsDF["startTime"].diff(1)
+        obsDF["startTimeDiff"] = obsDF["startTime"].diff(1).dt.total_seconds()
+        obsDF["startTimeDiffDiff"] = obsDF["startTimeDiff"].diff(1)
+        obsDF["startTimeDiffDiff"] = obsDF["startTimeDiffDiff"]
 
         print("Time between GPS attempt starts:")
-        print(" - Average: %.2fs" % (np.mean(obsDF["startTimeDiff"])).total_seconds())
-        print(" - Maximum: %.2fs" % obsDF["startTimeDiff"].max().total_seconds())
-        print(" - Minimum: %.2fs" % obsDF["startTimeDiff"].min().total_seconds())
+        print(" - Average: %.2fs" % (np.mean(obsDF["startTimeDiff"])))
+        print(" - Maximum: %.2fs" % obsDF["startTimeDiff"].max())
+        print(" - Minimum: %.2fs" % obsDF["startTimeDiff"].min())
         print()
         #Comment in to see obs with max and min time diff
-        # print(obsDF.iloc[obsDF["startTimeDiff"].idxmax()-1 : obsDF["startTimeDiff"].idxmax()+2])
+        # print(obsDF.iloc[obsDF["startTimeDiff"].idxmax()-10 : obsDF["startTimeDiff"].idxmax()+5])
         # print()
-        # print(obsDF.iloc[obsDF["startTimeDiff"].idxmin()-1 : obsDF["startTimeDiff"].idxmin()+2])
+        #print(obsDF.iloc[obsDF["startTimeDiff"].idxmin()-7 : obsDF["startTimeDiff"].idxmin()+8])
+        #print()
         # print()
+        # print(obsDF[obsDF["startTimeDiffDiff"].abs() > 5])
+        # print()
+        print(obsDF.to_string())
 
-        clockResets = obsDF.loc[obsDF["startTimeDiff"].dt.total_seconds() < 0]
+        firstFixTimes.append(obsDF.iloc[0][["year","month","day","hour","minute","second","subsecond"]])
+        firstStartTimes.append(obsDF.iloc[0].startTime)
+
+        clockResets = obsDF.loc[obsDF["startTimeDiff"] < 0]
         if(len(clockResets)>0 and fileName.startswith("Obs")):
             print()
             print("WARNING: Negative time diff(s):")
@@ -185,31 +207,49 @@ def processSatsFile(fileName):
         # singleGraph = True
 
         #plot success rate and on time per fix for different timeout options
-        timeoutOptions = np.arange(0.1,20.1,0.1)
-        timeoutDF = pd.DataFrame(timeoutOptions,columns=["timeout"])
-        timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["TTF"] < x.timeout]["TTF"]) + x.timeout*len(obsDF.loc[obsDF["TTF"] >= x.timeout]), axis=1)
-        timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF["TTF"] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)
-        timeoutDF["successRate"] = (timeoutDF["successes"]/len(obsDF["TTF"]))*100
-        timeoutDF["onTimePerFix"] = timeoutDF["onTime"]/timeoutDF["successes"]
+        # timeoutOptions = np.arange(0.1,20.1,0.1)
+        # timeoutDF = pd.DataFrame(timeoutOptions,columns=["timeout"])
+        # timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["TTF"] < x.timeout]["TTF"]) + x.timeout*len(obsDF.loc[obsDF["TTF"] >= x.timeout]), axis=1)
+        # timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF["TTF"] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)
+        # timeoutDF["successRate"] = (timeoutDF["successes"]/len(obsDF["TTF"]))*100
+        # timeoutDF["onTimePerFix"] = timeoutDF["onTime"]/timeoutDF["successes"]
 
-        singleGraph = True
+        # singleGraph = True
 
-        fig, ax1 = plt.subplots()
+        # fig, ax1 = plt.subplots()
 
-        plt.title("Timeout Options vs Performance")
+        # plt.title("Timeout Options vs Performance")
 
-        col = "tab:red"
-        ax1.set_xlabel("Timeout (s)")
-        ax1.set_ylabel("On time per fix (s)", color=col)
-        ax1.plot(timeoutDF["timeout"], timeoutDF["onTimePerFix"], color=col)
-        ax1.tick_params(axis="y", labelcolor=col)
+        # col = "tab:red"
+        # ax1.set_xlabel("Timeout (s)")
+        # ax1.set_ylabel("On time per fix (s)", color=col)
+        # ax1.plot(timeoutDF["timeout"], timeoutDF["onTimePerFix"], color=col)
+        # ax1.tick_params(axis="y", labelcolor=col)
 
-        ax2 = ax1.twinx()
+        # ax2 = ax1.twinx()
 
-        col = "tab:blue"
-        ax2.set_ylabel("Success Rate (%)", color=col)
-        ax2.plot(timeoutDF["timeout"],timeoutDF["successRate"], color=col)
-        ax2.tick_params(axis="y", labelcolor=col)
+        # col = "tab:blue"
+        # ax2.set_ylabel("Success Rate (%)", color=col)
+        # ax2.plot(timeoutDF["timeout"],timeoutDF["successRate"], color=col)
+        # ax2.tick_params(axis="y", labelcolor=col)
+
+        #plot CNR over time
+        # aggregated = fullDF.groupby("obsNum").agg(datetime = ("fixTime","first"),max_cnr=("CNR","max"),min_cnr=("CNR","min"),avg_cnr=("CNR","mean"))
+        # plt.title("CNR stats over time")
+        # plt.xlabel("Time")
+        # plt.ylabel("CNR")
+        # plt.plot(aggregated.datetime, aggregated.max_cnr,label="max")
+        # #plt.plot(aggregated.datetime, aggregated.min_cnr,label="min")
+        # #plt.plot(aggregated.datetime, aggregated.avg_cnr,label="avg")
+        # plt.legend(loc="best")
+
+        #plot TTF over time
+        plt.title("TTF stats over time")
+        plt.xlabel("Time")
+        plt.ylabel("TTF")
+        plt.plot(obsDF.fixTime, obsDF.TTF)
+        plt.legend(loc="best")
+        
 
 
 #class to output printed values to terminal and output file
@@ -237,6 +277,17 @@ for file in wantedFiles:
     processSatsFile(file)
     if singleGraph:
         break
+
+# print("First Fix Times:")
+# for time in firstFixTimes:
+#     string = ""
+#     for item in time:
+#         string += str(item).ljust(4)
+#     print(string)
+# print()
+# print("Estimated First Start Time")
+# for time in firstStartTimes:
+#     print(time)
 
 if GRAPH:
     plt.show()
