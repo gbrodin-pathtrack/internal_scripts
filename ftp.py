@@ -232,8 +232,8 @@ def uploadPathtrackFIle(localFileName, year, serverFileName):
     print("Uploading local file: "+localFileName+" to pathtrack as: "+serverFileName+" ...")
     ftpError, fileName = writeFTPFile(localFileName, serverFilePath, serverFileName, pathtrackHost, pathtrackUser, pathtrackPass)
     if ftpError and "550 Can't change directory to" in fileName:
-        print("Creating new pathtrack folder: ./brdc/"+year+" ...")
-        ftpError, folderName = createPathtrackDirectory("./brdc",year)
+        print("Creating new pathtrack folder: ./"+year+" ...")
+        ftpError, folderName = createPathtrackDirectory("./",year)
         if ftpError:
             return True, fileName+"\n"+folderName
         print("Uploading local file: "+localFileName+" to pathtrack as: "+serverFileName+" ...")
@@ -363,7 +363,7 @@ def updateFile(date: datetime, validate: bool, useHourly: bool):
         return True, False
     
     timetag = datetime.now(timezone.utc).strftime("%j_%H_%M_")
-    ftpError, ptrackFileName = uploadPathtrackFIle(nasaFileName, year+"/logs", timetag+fileName)
+    ftpError, ptrackFileName = uploadPathtrackFIle(nasaFileName, year, timetag+fileName)
     if ftpError:
         print("FTP ERROR\n"+ptrackFileName)
         return True, False
@@ -421,15 +421,15 @@ def updateFile(date: datetime, validate: bool, useHourly: bool):
 # err, header, ephems = parseRINEX("brdc1150.24n.gz")
 # validateEphems(ephems)
 
-err, header, ephems = parseRINEX("temp/manual_brdc2570.24n.gz")
-err2, header2, ephems2 = parseRINEX("temp/nasa_brdc2570.24n.gz")
-if err or err2:
-    print(header)
-    print(header2)
-else:
-    combineEphems(ephems2, ephems)
+# err, header, ephems = parseRINEX("temp/manual_brdc2570.24n.gz")
+# err2, header2, ephems2 = parseRINEX("temp/nasa_brdc2570.24n.gz")
+# if err or err2:
+#     print(header)
+#     print(header2)
+# else:
+#     combineEphems(ephems2, ephems)
 
-exit(0)
+# exit(0)
 
 
 #for lambda this code is moved out of global scope and into a function called "lambda_handler(event, context)", with the exit(0) statements replaced with returns
@@ -464,8 +464,6 @@ for delta in range(1,7):
         continue
     day = today - timedelta(delta)
     error, valid = updateFile(day, validate, False)
-    if(validate):
-        valid = True
     if error:
         print("Ending execution due to error")
         exit(0)
