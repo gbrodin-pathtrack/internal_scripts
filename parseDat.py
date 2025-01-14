@@ -2,8 +2,8 @@ import pandas as pd
 from os import listdir
 from os.path import isfile, join
 
-from parseGPS import parseGPSLine
-from parsePressSingle import parsePressSingleLine
+from parsers.parseGPS import parseGPSLine
+from parsers.parsePressSingle import parsePressSingleLine
 
 HEADERS = {0x90:("GPS",parseGPSLine),
            0xC0:("PressSingle",parsePressSingleLine)
