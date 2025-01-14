@@ -1,5 +1,7 @@
 import datetime
 
+obsNum = 0
+
 def validateTimeTag(obs):
     ret = True
     if(obs["year"] > 99):
@@ -33,8 +35,10 @@ def validateTimeTag(obs):
     return ret
 
 def parseObs(line, index):
+    global obsNum
     #empty dict for obs info
-    obs = {}
+    obs = {"obsNum":obsNum}
+    obsNum += 1
     #counters for number of each satelite type
     numGPS = 0
     numGalileo = 0
