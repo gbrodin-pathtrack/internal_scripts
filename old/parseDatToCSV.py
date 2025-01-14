@@ -60,7 +60,7 @@ def validateTimeTag(obs):
         print("Second:",obs["second"])
         ret = False
     if(obs["subsecond"] > 63):
-        print("ERROR: Subsecond not in 0-59")
+        print("ERROR: Subsecond not in 0-63")
         print("Subsecond:",obs["subsecond"])
         ret = False
     return ret

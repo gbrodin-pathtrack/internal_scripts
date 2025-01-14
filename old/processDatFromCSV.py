@@ -30,7 +30,7 @@ def processSatsFile(fileName):
     fullDF["fixTime"] = pd.to_datetime(fullDF["fixTime"])
 
     #create new dataframe from rows with satelite ID of 0, these are dummy rows with only obs info attached
-    obsDF = pd.DataFrame(fullDF.loc[fullDF["ID"] == 0]).set_index(["obsNum"])
+    obsDF = pd.DataFrame(fullDF.loc[fullDF["ID"] == 0]).reset_index(drop=True)
     #drop sat info columns
     obsDF.drop([col for col in obsDF.columns if col in ["ID","CNR","codePhase","dopplerMS","dopplerHz"]],axis=1,inplace=True)
 
@@ -172,10 +172,10 @@ def processSatsFile(fileName):
         print(" - Minimum: %.2fs" % obsDF["startTimeDiff"].min())
         print()
         #Comment in to see obs with max and min time diff
-        # print(obsDF.iloc[obsDF["startTimeDiff"].idxmax()-10 : obsDF["startTimeDiff"].idxmax()+5])
-        # print()
-        #print(obsDF.iloc[obsDF["startTimeDiff"].idxmin()-7 : obsDF["startTimeDiff"].idxmin()+8])
-        #print()
+        print(obsDF.iloc[obsDF["startTimeDiff"].idxmax()-4 : obsDF["startTimeDiff"].idxmax()+3])
+        print()
+        print(obsDF.iloc[obsDF["startTimeDiff"].idxmin()-4 : obsDF["startTimeDiff"].idxmin()+3])
+        print()
         # print()
         # print(obsDF[obsDF["startTimeDiffDiff"].abs() > 5])
         # print()
@@ -207,48 +207,48 @@ def processSatsFile(fileName):
         # singleGraph = True
 
         #plot success rate and on time per fix for different timeout options
-        # timeoutOptions = np.arange(0.1,20.1,0.1)
-        # timeoutDF = pd.DataFrame(timeoutOptions,columns=["timeout"])
-        # timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["TTF"] < x.timeout]["TTF"]) + x.timeout*len(obsDF.loc[obsDF["TTF"] >= x.timeout]), axis=1)
-        # timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF["TTF"] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)
-        # timeoutDF["successRate"] = (timeoutDF["successes"]/len(obsDF["TTF"]))*100
-        # timeoutDF["onTimePerFix"] = timeoutDF["onTime"]/timeoutDF["successes"]
+        timeoutOptions = np.arange(0.1,20.1,0.1)
+        timeoutDF = pd.DataFrame(timeoutOptions,columns=["timeout"])
+        timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["TTF"] < x.timeout]["TTF"]) + x.timeout*len(obsDF.loc[obsDF["TTF"] >= x.timeout]), axis=1)
+        timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF["TTF"] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)
+        timeoutDF["successRate"] = (timeoutDF["successes"]/len(obsDF["TTF"]))*100
+        timeoutDF["onTimePerFix"] = timeoutDF["onTime"]/timeoutDF["successes"]
 
-        # singleGraph = True
+        singleGraph = True
 
-        # fig, ax1 = plt.subplots()
+        fig, ax1 = plt.subplots()
 
-        # plt.title("Timeout Options vs Performance")
+        plt.title("Timeout Options vs Performance")
 
-        # col = "tab:red"
-        # ax1.set_xlabel("Timeout (s)")
-        # ax1.set_ylabel("On time per fix (s)", color=col)
-        # ax1.plot(timeoutDF["timeout"], timeoutDF["onTimePerFix"], color=col)
-        # ax1.tick_params(axis="y", labelcolor=col)
+        col = "tab:red"
+        ax1.set_xlabel("Timeout (s)")
+        ax1.set_ylabel("On time per fix (s)", color=col)
+        ax1.plot(timeoutDF["timeout"], timeoutDF["onTimePerFix"], color=col)
+        ax1.tick_params(axis="y", labelcolor=col)
 
-        # ax2 = ax1.twinx()
+        ax2 = ax1.twinx()
 
-        # col = "tab:blue"
-        # ax2.set_ylabel("Success Rate (%)", color=col)
-        # ax2.plot(timeoutDF["timeout"],timeoutDF["successRate"], color=col)
-        # ax2.tick_params(axis="y", labelcolor=col)
+        col = "tab:blue"
+        ax2.set_ylabel("Success Rate (%)", color=col)
+        ax2.plot(timeoutDF["timeout"],timeoutDF["successRate"], color=col)
+        ax2.tick_params(axis="y", labelcolor=col)
 
         #plot CNR over time
         # aggregated = fullDF.groupby("obsNum").agg(datetime = ("fixTime","first"),max_cnr=("CNR","max"),min_cnr=("CNR","min"),avg_cnr=("CNR","mean"))
         # plt.title("CNR stats over time")
         # plt.xlabel("Time")
         # plt.ylabel("CNR")
-        # plt.plot(aggregated.datetime, aggregated.max_cnr,label="max")
+        # #plt.plot(aggregated.datetime, aggregated.max_cnr,label="max")
         # #plt.plot(aggregated.datetime, aggregated.min_cnr,label="min")
-        # #plt.plot(aggregated.datetime, aggregated.avg_cnr,label="avg")
+        # plt.plot(aggregated.datetime, aggregated.avg_cnr,label="avg")
         # plt.legend(loc="best")
 
         #plot TTF over time
-        plt.title("TTF stats over time")
-        plt.xlabel("Time")
-        plt.ylabel("TTF")
-        plt.plot(obsDF.fixTime, obsDF.TTF)
-        plt.legend(loc="best")
+        # plt.title("TTF stats over time")
+        # plt.xlabel("Time")
+        # plt.ylabel("TTF")
+        # plt.plot(obsDF.fixTime, obsDF.TTF)
+        # plt.legend(loc="best")
         
 
 
@@ -266,12 +266,22 @@ class Logger(object):
         self.terminal.flush()
         self.file.flush()
 
-#run processSatsFile on every file in root directory that ends with "_sats.csv"
-wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_sats.csv")]
+#run processSatsFile on every file in root directory that ends with "_GPS.csv"
+wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS.csv")]
 
 #duplicate print messages into an output file, only if there are files to process
 if len(wantedFiles) > 0:
     sys.stdout = Logger()
+
+#multiple files to process, create a combined one
+if len(wantedFiles) > 1:
+    dfArr = []
+    for file in wantedFiles:
+        df = pd.read_csv(file)
+        dfArr.append(df)
+    df_combined = pd.concat(dfArr)
+    df_combined.to_csv("combined_GPS.csv",index=False)
+    wantedFiles.insert(0,"combined_GPS.csv")
 
 for file in wantedFiles:
     processSatsFile(file)
