@@ -1,12 +1,10 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from os import listdir
 from os.path import isfile, join
 import sys
 
-#ADC ref is 1V, 8bit scale = 255 divisions, voltage read is 1/5 of actual vbatt so * 5
-VBATT_SCALE = (5/255)
+USE_PICKLE = True
 
 def processSatsFile(fileName):
     #show which file is being processed
@@ -15,7 +13,10 @@ def processSatsFile(fileName):
     print()
 
     #read file into data frame
-    fullDF = pd.read_csv(fileName)
+    if USE_PICKLE:
+        fullDF = pd.read_pickle(fileName)
+    else:
+        fullDF = pd.read_csv(fileName)
     #convert datetime string to datetime
     fullDF["fixTime"] = pd.to_datetime(fullDF["fixTime"])
 
@@ -42,7 +43,7 @@ def processSatsFile(fileName):
 
     #only print battery stats for individual tag files
     if(fileName.startswith("Obs")):
-        print("Battery Voltage Dropped: %.2fV" % ((np.mean(obsDF.head(10)["vbatt"]) - np.mean(obsDF.tail(10)["vbatt"]))*VBATT_SCALE))
+        print("Battery Voltage Dropped: %.2fV" % ((np.mean(obsDF.head(10)["vbatt"]) - np.mean(obsDF.tail(10)["vbatt"]))))
         print()
 
     totalTime = np.sum(obsDF["TTF"])
@@ -169,7 +170,7 @@ def processSatsFile(fileName):
         # print()
         # print(obsDF[obsDF["startTimeDiffDiff"].abs() > 5])
         # print()
-        print(obsDF.to_string())
+        # print(obsDF.to_string())
 
         clockResets = obsDF.loc[obsDF["startTimeDiff"] < 0]
         if(len(clockResets)>0 and fileName.startswith("Obs")):
@@ -195,23 +196,16 @@ class Logger(object):
         self.terminal.flush()
         self.file.flush()
 
-#run processSatsFile on every file in root directory that ends with "_GPS.csv"
-wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS.csv")]
+if USE_PICKLE:
+    wantedExtension = ".pkl"
+else:
+    wantedExtension = ".csv"
+#get every file in root directory that ends with "_GPS"
+wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS"+wantedExtension)]
 
 #duplicate print messages into an output file, only if there are files to process
 if len(wantedFiles) > 0:
     sys.stdout = Logger()
 
-#multiple files to process, create a combined one
-if len(wantedFiles) > 1:
-    dfArr = []
-    for file in wantedFiles:
-        df = pd.read_csv(file)
-        dfArr.append(df)
-    df_combined = pd.concat(dfArr)
-    df_combined.to_csv("combined_GPS.csv",index=False)
-    wantedFiles.insert(0,"combined_GPS.csv")
-
 for file in wantedFiles:
     processSatsFile(file)
-

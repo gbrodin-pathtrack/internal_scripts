@@ -1,5 +1,8 @@
 import datetime
 
+#ADC ref is 1V, 8bit scale = 255 divisions, voltage read is 1/5 of actual vbatt so * 5
+VBATT_SCALE = (5/255)
+
 obsNum = 0
 
 def validateTimeTag(obs):
@@ -65,7 +68,7 @@ def parseObs(line, index):
     numSV = line[index]
     obs["numSV"] = numSV
     index += 1
-    obs["vbatt"] = line[index]
+    obs["vbatt"] = line[index] * VBATT_SCALE
     index += 1
     #ttf is stored in 10ths of seconds
     obs["TTF"] = line[index]/10
@@ -107,7 +110,7 @@ def parseObs(line, index):
     #return obs info and list of sat infos
     return satArr, index
 
-def parseGPSLine(data, outputArr):
+def parseGPSLine(data, commonHeader, outputArr):
     index = 0
     while index < len(data):
         newSats, index = parseObs(data, index)

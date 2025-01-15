@@ -1,27 +1,46 @@
 import pandas as pd
+import numpy as np
 from os import listdir
 from os.path import isfile, join
 
+import time
+
 from parsers.parseGPS import parseGPSLine
 from parsers.parsePressSingle import parsePressSingleLine
+from parsers.parseAccel import parseAccelLine
+
+USE_PICKLE = True
 
 HEADERS = {0x90:("GPS",parseGPSLine),
-           0xC0:("PressSingle",parsePressSingleLine)
+           0xC0:("PressSingle",parsePressSingleLine),
+           0xA0:("Accel",parseAccelLine),
+           0xA2:("Accel",parseAccelLine),
+           0xA4:("Accel",parseAccelLine),
+           0xA6:("Accel",parseAccelLine),
+           0xA8:("Accel",parseAccelLine),
+           0xAA:("Accel",parseAccelLine),
+           0xAC:("Accel",parseAccelLine),
+           0xAE:("Accel",parseAccelLine)
            }
 
 def parseDatFile(fileName):
-    with open(fileName,"r") as f:
-        fileString = f.read()
+    print("Processing",fileName)
+    start = time.time()
+    #read every line from file, ignoring header lines and produce a list of np arrays of bytes
+    with open(fileName, "r") as f:
+        byteLines = [
+            np.array([int(byte) for byte in line.split()])
+            for line in f
+            if line[:1].isdigit()
+        ]
 
-    #split file into lines
-    lines = fileString.split("\n")
-    #get data lines and split into bytes
-    byteLines = [line.split() for line in lines if line[:1].isdigit()]
-    #convert each byte from a string to number
-    byteLines = [[int(byte) for byte in byteLine] for byteLine in byteLines]
+    end = time.time()
+    print("Time reading and converting file",end-start)
 
     #empty dict for tag IDs
     tags = {}
+
+    start = time.time()
 
     for line in byteLines:
         #extract data type and UHF flag from common header
@@ -57,10 +76,16 @@ def parseDatFile(fileName):
 
         #strip common header and invalid bytes
         data = line[dataStart:length]
+
+        commonHeader = line[:dataStart]
+
         
         #pass line of data and reference to output array to handler function
-        dataTypeHandler(data, tags[tagID][dataTypeStr])
-    
+        dataTypeHandler(data, commonHeader, tags[tagID][dataTypeStr])
+
+    end = time.time()
+    print("Time parsing lines",end-start)
+    start = time.time()
     #generate output files for each tag for each data type
     for tagID, tagData in tags.items():
         for dataType, obsArr in tagData.items():
@@ -75,7 +100,15 @@ def parseDatFile(fileName):
                 continue
 
             df = pd.DataFrame(obsArr)
-            df.to_csv(fileName[:-4]+tagIDfileStr+"_"+dataType+".csv",index=False)
+            #df.to_csv(fileName[:-4]+tagIDfileStr+"_"+dataType+".csv",index=False)
+            if USE_PICKLE:
+                df.to_pickle(fileName[:-4]+tagIDfileStr+"_"+dataType+".pkl")
+            else:
+                df.to_csv(fileName[:-4]+tagIDfileStr+"_"+dataType+".csv",index=False)
+
+    end = time.time()
+    print("Time writing output files",end-start)
+    print()
 
 #run parseDatFile on every file in root directory that starts with "Obs" and ends with ".dat"
 wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.startswith("Obs") and f.endswith(".dat")]

@@ -4,13 +4,22 @@ import matplotlib.pyplot as plt
 from os import listdir
 from os.path import isfile, join
 
-#run processSatsFile on every file in root directory that ends with "_GPS.csv"
-wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS.csv")]
+USE_PICKLE = True
+
+if USE_PICKLE:
+    wantedExtension = ".pkl"
+else:
+    wantedExtension = ".csv"
+#get every file in root directory that ends with "_GPS"
+wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS"+wantedExtension)]
 
 fileName = wantedFiles[0]
 
 #read file into data frame
-fullDF = pd.read_csv(fileName)
+if USE_PICKLE:
+    fullDF = pd.read_pickle(fileName)
+else:
+    fullDF = pd.read_csv(fileName)
 #convert datetime string to datetime
 fullDF["fixTime"] = pd.to_datetime(fullDF["fixTime"])
 
@@ -23,6 +32,5 @@ plt.title("TTF stats over time")
 plt.xlabel("Time")
 plt.ylabel("TTF")
 plt.plot(obsDF.fixTime, obsDF.TTF)
-plt.legend(loc="best")
 
 plt.show()
