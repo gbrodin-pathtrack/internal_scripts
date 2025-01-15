@@ -3,18 +3,18 @@ import numpy as np
 from parsers.parsePackedTime import parsePackedTime
 
 #used to convert from range as stored in header
-accelScales = [1, 16, 4, 8]
+ACCEL_SCALES = [1, 16, 4, 8]
 
-def parseAccelLine(data, commonHeader, obsArr):
+def parseAccelLine(data, commonHeader, outputArr):
     #take scale from common header
     accelScaleCode = (commonHeader[0] & 0x0C) >> 2
-    accelScale = accelScales[accelScaleCode]
+    accelScale = ACCEL_SCALES[accelScaleCode]
 
     #take scalar/vector flag from common header
     scalarFlag = (commonHeader[0] & 0x02) >> 1
 
     #convert ptTimePacked to python datetime
-    startDatetime = parsePackedTime(data[:5])
+    startDateTime = parsePackedTime(data[:5])
 
     subsecondDuration = data[5] + (data[6] << 8)
 
@@ -35,10 +35,10 @@ def parseAccelLine(data, commonHeader, obsArr):
         accelValues = [{"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
 
     timeStep = timedelta(microseconds=15625*(subsecondDuration/len(accelValues)))
-    obsDatetime = startDatetime
+    obsDatetime = startDateTime
     for obs in accelValues:
         obs["time"] = obsDatetime
         obsDatetime += timeStep
 
-    obsArr.extend(accelValues)
+    outputArr.extend(accelValues)
     

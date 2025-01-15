@@ -8,9 +8,11 @@ import time
 from parsers.parseGPS import parseGPSLine
 from parsers.parsePressSingle import parsePressSingleLine
 from parsers.parseAccel import parseAccelLine
+from parsers.parseImmersionAccel import parseImmersionAccel
 
 USE_PICKLE = True
 
+#add headers here without the UHF bit set, UHF bit will be extracted and handled the same for all header types
 HEADERS = {0x90:("GPS",parseGPSLine),
            0xC0:("PressSingle",parsePressSingleLine),
            0xA0:("Accel",parseAccelLine),
@@ -20,7 +22,8 @@ HEADERS = {0x90:("GPS",parseGPSLine),
            0xA8:("Accel",parseAccelLine),
            0xAA:("Accel",parseAccelLine),
            0xAC:("Accel",parseAccelLine),
-           0xAE:("Accel",parseAccelLine)
+           0xAE:("Accel",parseAccelLine),
+           0xD2:("ImmersionAccel",parseImmersionAccel)
            }
 
 def parseDatFile(fileName):
