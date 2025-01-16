@@ -8,10 +8,10 @@ ACCEL_SCALES = [1, 16, 4, 8]
 def parseImmersionAccel(data, commonHeader, outputArr):
     startDateTime = parsePackedTime(data[:5])
     
-    accelScaleCode = data[5]&0x03
+    accelScaleCode = (data[5] & 0x0C) >> 2
     accelScale = ACCEL_SCALES[accelScaleCode]
 
-    scalarFlag = (data[5]&0x04)>>2
+    scalarFlag = data[5] & 0x01
 
     interval = data[6]
     
