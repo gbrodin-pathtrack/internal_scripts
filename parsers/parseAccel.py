@@ -21,7 +21,7 @@ def parseAccelLine(data, commonHeader, outputArr):
     if scalarFlag == 1:
         lower = data[7::2]
         upper = data[8::2]
-        magArr = (((lower>>2) + (upper<<6))*accelScale)/16384
+        magArr = (((lower>>2) + (upper<<6))*accelScale)/8192
         accelValues = [{"time":0,"mag":mag} for mag in magArr]
     else:
         upperX = data[7::4]

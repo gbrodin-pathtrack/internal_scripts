@@ -18,7 +18,7 @@ def parseImmersionAccel(data, commonHeader, outputArr):
     if scalarFlag == 1:
         lower = data[7::2]
         upper = data[8::2]
-        magArr = (((upper<<6) + (lower&0x3F))*accelScale)/16384
+        magArr = (((upper<<6) + (lower&0x3F))*accelScale)/8192
         invalidArr = ((lower&0x80)>>7).astype(bool)
         immersedArr = ((lower&0x40)>>6).astype(bool)
         accelValues = [{"time":0,"immersed":immersed,"accel_valid":accelValid,"mag":mag} 
