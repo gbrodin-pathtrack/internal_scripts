@@ -3,7 +3,7 @@ import numpy as np
 from parsers.parsePackedTime import parsePackedTime
 
 #used to convert from range as stored in header
-ACCEL_SCALES = [1, 16, 4, 8]
+ACCEL_SCALES = [2, 16, 4, 8]
 
 def parseAccelLine(data, commonHeader, outputArr):
     #take scale from common header
@@ -22,7 +22,7 @@ def parseAccelLine(data, commonHeader, outputArr):
         lower = data[7::2]
         upper = data[8::2]
         magArr = (((lower>>2) + (upper<<6))*accelScale)/16384
-        accelValues = [{"mag":mag} for mag in magArr]
+        accelValues = [{"time":0,"mag":mag} for mag in magArr]
     else:
         upperX = data[7::4]
         upperY = data[8::4]
@@ -32,7 +32,7 @@ def parseAccelLine(data, commonHeader, outputArr):
         yArr = ((((upperY&0x7F) << 2) + ((lower&0x30)>>4) - ((upperY&0x80)<<2))*accelScale)/512
         zArr = ((((upperZ&0x7F) << 2) + ((lower&0x0C)>>2) - ((upperZ&0x80)<<2))*accelScale)/512
         magArr = np.sqrt(xArr**2 + yArr**2 + zArr**2)
-        accelValues = [{"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
+        accelValues = [{"time":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
 
     timeStep = timedelta(microseconds=15625*(subsecondDuration/len(accelValues)))
     obsDatetime = startDateTime
