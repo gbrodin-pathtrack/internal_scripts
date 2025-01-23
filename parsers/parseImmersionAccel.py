@@ -21,16 +21,16 @@ def parseImmersionAccel(data, commonHeader, outputArr):
         magArr = (((upper<<6) + (lower&0x3F))*accelScale)/8192
         invalidArr = ((lower&0x80)>>7).astype(bool)
         immersedArr = ((lower&0x40)>>6).astype(bool)
-        accelValues = [{"time":0,"immersed":immersed,"accel_valid":accelValid,"mag":mag} 
-                    for immersed, accelValid, mag in zip(immersedArr, invalidArr, magArr)]
+        accelValues = [{"time":0,"immersed":immersed,"accel_invalid":accelInvalid,"mag":mag} 
+                    for immersed, accelInvalid, mag in zip(immersedArr, invalidArr, magArr)]
     else:
         lower = data[7::4]
         upperX = data[8::4]
         upperY = data[9::4]
         upperZ = data[10::4]
-        xArr = ((((upperX&0x7F) << 2) + ((lower&0x03)) - ((upperX&0x80)<<2))*accelScale)/512
+        xArr = ((((upperX&0x7F) << 2) + ((lower&0x30)>>4) - ((upperX&0x80)<<2))*accelScale)/512
         yArr = ((((upperY&0x7F) << 2) + ((lower&0x0C)>>2) - ((upperY&0x80)<<2))*accelScale)/512
-        zArr = ((((upperZ&0x7F) << 2) + ((lower&0x30)>>4) - ((upperZ&0x80)<<2))*accelScale)/512
+        zArr = ((((upperZ&0x7F) << 2) + ((lower&0x03)) - ((upperZ&0x80)<<2))*accelScale)/512
         invalidArr = ((lower&0x80)>>7).astype(bool)
         immersedArr = ((lower&0x40)>>6).astype(bool)
         magArr = np.sqrt(xArr**2 + yArr**2 + zArr**2)
