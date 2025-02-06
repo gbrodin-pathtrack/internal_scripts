@@ -45,7 +45,7 @@ def parseDatFile(fileName):
 
     start = time.time()
 
-    for line in byteLines:
+    for lineNum, line in enumerate(byteLines):
         #extract data type and UHF flag from common header
         dataType = line[0] & 0xFE
         uhfType = line[0] & 0x1
@@ -84,7 +84,7 @@ def parseDatFile(fileName):
 
         
         #pass line of data and reference to output array to handler function
-        dataTypeHandler(data, commonHeader, tags[tagID][dataTypeStr])
+        dataTypeHandler(data, commonHeader, lineNum, tags[tagID][dataTypeStr])
 
     end = time.time()
     print("Time parsing lines",end-start)

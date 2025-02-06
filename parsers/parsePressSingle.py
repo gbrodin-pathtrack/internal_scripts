@@ -11,7 +11,7 @@ def decode16BitPress(value, sensor):
         else:
             return value-55500
 
-def parsePressSingleLine(data, commonHeader, outputArr):
+def parsePressSingleLine(data, commonHeader, lineNum, outputArr):
     index = 0
 
     format = (data[0] & 0xF8) >> 3
@@ -35,7 +35,7 @@ def parsePressSingleLine(data, commonHeader, outputArr):
         index += 2
         temp = ((data[index])*0.5)-40
         index += 1
-        pressObs = {"headerTime":startDatetime,"datetime":startDatetime, "pressure":press,"temp":temp}
+        pressObs = {"line":lineNum,"headerTime":startDatetime,"datetime":startDatetime, "pressure":press,"temp":temp}
         outputArr.append(pressObs)
         
         while(index < len(data)):
@@ -47,7 +47,7 @@ def parsePressSingleLine(data, commonHeader, outputArr):
             index += 2
             temp = ((data[index])*0.5)-40
             index += 1
-            pressObs = {"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime, "pressure":press,"temp":temp}
+            pressObs = {"line":lineNum,"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime, "pressure":press,"temp":temp}
             outputArr.append(pressObs)
 
     if format == 1:
@@ -56,7 +56,7 @@ def parsePressSingleLine(data, commonHeader, outputArr):
             return
         press = (data[index] * 40) + 1000
         index += 1
-        pressObs = {"headerTime":startDatetime,"datetime":startDatetime, "pressure":press}
+        pressObs = {"line":lineNum,"headerTime":startDatetime,"datetime":startDatetime, "pressure":press}
         outputArr.append(pressObs)
         
         while(index < len(data)):
@@ -66,7 +66,7 @@ def parsePressSingleLine(data, commonHeader, outputArr):
             press = (data[index] * 40) + 1000
             index += 1
             
-            pressObs = {"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime, "pressure":press}
+            pressObs = {"line":lineNum,"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime, "pressure":press}
             outputArr.append(pressObs)
 
     if format == 2:
@@ -76,7 +76,7 @@ def parsePressSingleLine(data, commonHeader, outputArr):
         press = (data[index] * 40) + 1000
         index += 1
         temp = subsecond
-        pressObs = {"headerTime":startDatetime,"datetime":startDatetime, "pressure":press,"temp":temp}
+        pressObs = {"line":lineNum,"headerTime":startDatetime,"datetime":startDatetime, "pressure":press,"temp":temp}
         outputArr.append(pressObs)
         
         while(index < len(data)):
@@ -87,13 +87,13 @@ def parsePressSingleLine(data, commonHeader, outputArr):
             press = (data[index] * 40) + 1000
             index += 1
             
-            pressObs = {"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime, "pressure":press,"temp":temp}
+            pressObs = {"line":lineNum,"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime, "pressure":press,"temp":temp}
             outputArr.append(pressObs)
     
     if format == 3:
         temp = ((data[index] + (subsecond << 8)) * 0.08) - 40
         index += 1
-        pressObs = {"headerTime":startDatetime,"datetime":startDatetime,"temp":temp}
+        pressObs = {"line":lineNum,"headerTime":startDatetime,"datetime":startDatetime,"temp":temp}
         outputArr.append(pressObs)
         
         while(index < len(data)):
@@ -102,7 +102,7 @@ def parsePressSingleLine(data, commonHeader, outputArr):
             index += 3
             obsDatetime = startDatetime + datetime.timedelta(seconds=offset)
             
-            pressObs = {"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime,"temp":temp}
+            pressObs = {"line":lineNum,"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime,"temp":temp}
             outputArr.append(pressObs)
     
     if format == 4:
@@ -115,5 +115,5 @@ def parsePressSingleLine(data, commonHeader, outputArr):
             pressRaw = data[index] + (data[index+1]<<8)
             press = decode16BitPress(pressRaw, sensor)
             index += 2
-            pressObs = {"datetime":obsDatetime, "pressure":press}
+            pressObs = {"line":lineNum,"datetime":obsDatetime, "pressure":press}
             outputArr.append(pressObs)

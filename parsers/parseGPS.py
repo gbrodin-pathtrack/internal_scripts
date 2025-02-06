@@ -37,10 +37,10 @@ def validateTimeTag(obs):
         ret = False
     return ret
 
-def parseObs(line, index):
+def parseObs(line, index, lineNum):
     global obsNum
     #empty dict for obs info
-    obs = {"obsNum":obsNum}
+    obs = {"line":lineNum,"obsNum":obsNum}
     obsNum += 1
     #counters for number of each satelite type
     numGPS = 0
@@ -110,8 +110,8 @@ def parseObs(line, index):
     #return obs info and list of sat infos
     return satArr, index
 
-def parseGPSLine(data, commonHeader, outputArr):
+def parseGPSLine(data, commonHeader, lineNum, outputArr):
     index = 0
     while index < len(data):
-        newSats, index = parseObs(data, index)
+        newSats, index = parseObs(data, index, lineNum)
         outputArr.extend(newSats)

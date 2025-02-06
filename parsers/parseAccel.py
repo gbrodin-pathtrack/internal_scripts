@@ -5,7 +5,7 @@ from parsers.parsePackedTime import parsePackedTime
 #used to convert from range as stored in header
 ACCEL_SCALES = [2, 16, 4, 8]
 
-def parseAccelLine(data, commonHeader, outputArr):
+def parseAccelLine(data, commonHeader, lineNum, outputArr):
     #take scale from common header
     accelScaleCode = (commonHeader[0] & 0x0C) >> 2
     accelScale = ACCEL_SCALES[accelScaleCode]
@@ -32,7 +32,7 @@ def parseAccelLine(data, commonHeader, outputArr):
         yArr = ((((upperY&0x7F) << 2) + ((lower&0x30)>>4) - ((upperY&0x80)<<2))*accelScale)/512
         zArr = ((((upperZ&0x7F) << 2) + ((lower&0x0C)>>2) - ((upperZ&0x80)<<2))*accelScale)/512
         magArr = np.sqrt(xArr**2 + yArr**2 + zArr**2)
-        accelValues = [{"time":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
+        accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
 
     timeStep = timedelta(microseconds=15625*(subsecondDuration/len(accelValues)))
     obsDatetime = startDateTime

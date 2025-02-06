@@ -5,7 +5,7 @@ from parsers.parsePackedTime import parsePackedTime
 #used to convert from range as stored in header
 ACCEL_SCALES = [2, 16, 4, 8]
 
-def parseImmersionAccel(data, commonHeader, outputArr):
+def parseImmersionAccel(data, commonHeader, lineNum, outputArr):
     startDateTime = parsePackedTime(data[:5])
     
     accelScaleCode = (data[5] & 0x0C) >> 2
@@ -21,7 +21,7 @@ def parseImmersionAccel(data, commonHeader, outputArr):
         magArr = (((upper<<6) + (lower&0x3F))*accelScale)/8192
         invalidArr = ((lower&0x80)>>7).astype(bool)
         immersedArr = ((lower&0x40)>>6).astype(bool)
-        accelValues = [{"time":0,"immersed":immersed,"accel_invalid":accelInvalid,"mag":mag} 
+        accelValues = [{"line":lineNum,"time":0,"immersed":immersed,"accel_invalid":accelInvalid,"mag":mag}
                     for immersed, accelInvalid, mag in zip(immersedArr, invalidArr, magArr)]
     else:
         lower = data[7::4]
@@ -34,7 +34,7 @@ def parseImmersionAccel(data, commonHeader, outputArr):
         invalidArr = ((lower&0x80)>>7).astype(bool)
         immersedArr = ((lower&0x40)>>6).astype(bool)
         magArr = np.sqrt(xArr**2 + yArr**2 + zArr**2)
-        accelValues = [{"time":0,"immersed":immersed,"accel_invalid":accelInvalid,"x":x,"y":y,"z":z,"mag":mag} 
+        accelValues = [{"line":lineNum,"time":0,"immersed":immersed,"accel_invalid":accelInvalid,"x":x,"y":y,"z":z,"mag":mag}
                     for immersed, accelInvalid, x, y, z, mag in zip(immersedArr, invalidArr, xArr, yArr, zArr, magArr)]
 
     timeStep = timedelta(seconds=interval)
