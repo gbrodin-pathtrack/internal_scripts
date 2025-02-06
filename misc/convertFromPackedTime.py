@@ -1,4 +1,4 @@
-time = "24 46 42 81 79"
+time = "25 45 212 57 17"
 time = time.split()
 time = [int(unit) for unit in time]
 
