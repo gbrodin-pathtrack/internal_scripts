@@ -93,7 +93,7 @@ def parseObs(line, index, lineNum):
             numGalileo += 1
         sat["CNR"] = line[index]
         index += 1
-        sat["codePhase"] = line[index] + line[index + 1]<<8 + line[index + 2]<<16
+        sat["codePhase"] = line[index] + (line[index + 1]<<8) + (line[index + 2]<<16)
         index += 3
         #add sat info to array
         satArr.append(sat)
