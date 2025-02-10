@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 import numpy as np
 from parsers.parsePackedTime import parsePackedTime
 
@@ -22,7 +22,7 @@ def parseAccelLine(data, commonHeader, lineNum, outputArr):
         lower = data[7::2]
         upper = data[8::2]
         magArr = (((lower>>2) + (upper<<6))*accelScale)/8192
-        accelValues = [{"time":0,"mag":mag} for mag in magArr]
+        accelValues = [{"line":lineNum,"time":0,"mag":mag} for mag in magArr]
     else:
         upperX = data[7::4]
         upperY = data[8::4]

@@ -8,7 +8,8 @@ import time
 from parsers.parseGPS import parseGPSLine
 from parsers.parsePressSingle import parsePressSingleLine
 from parsers.parseAccel import parseAccelLine
-from parsers.parseImmersionAccel import parseImmersionAccel
+from parsers.parseImmersionAccel import parseImmersionAccelLine
+from parsers.parseEHSolar import parseEHSolarLine
 
 USE_PICKLE = True
 
@@ -23,7 +24,8 @@ HEADERS = {0x90:("GPS",parseGPSLine),
            0xAA:("Accel",parseAccelLine),
            0xAC:("Accel",parseAccelLine),
            0xAE:("Accel",parseAccelLine),
-           0xD2:("ImmersionAccel",parseImmersionAccel)
+           0xD2:("ImmersionAccel",parseImmersionAccelLine),
+           0xE0:("EHSolar",parseEHSolarLine)
            }
 
 def parseDatFile(fileName):

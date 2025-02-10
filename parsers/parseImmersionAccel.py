@@ -5,7 +5,7 @@ from parsers.parsePackedTime import parsePackedTime
 #used to convert from range as stored in header
 ACCEL_SCALES = [2, 16, 4, 8]
 
-def parseImmersionAccel(data, commonHeader, lineNum, outputArr):
+def parseImmersionAccelLine(data, commonHeader, lineNum, outputArr):
     startDateTime = parsePackedTime(data[:5])
     
     accelScaleCode = (data[5] & 0x0C) >> 2
