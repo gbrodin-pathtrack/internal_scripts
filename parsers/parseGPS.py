@@ -68,7 +68,7 @@ def parseObs(line, index, lineNum):
     numSV = line[index]
     obs["numSV"] = numSV
     index += 1
-    obs["vbatt"] = line[index] * VBATT_SCALE
+    obs["vbatt"] = line[index] #* VBATT_SCALE
     index += 1
     #ttf is stored in 10ths of seconds
     obs["TTF"] = line[index]/10
