@@ -297,10 +297,34 @@ def validateEphems(ephems: list):
     #     times[ephem['sat']-1].append(ephem['time'].strftime("%H:%M"))
     # for index, sat in enumerate(times):
     #     print("SVID:",index+1,", Num Ephemerides:",counts[index],", Ephemeris Times:",sat)
+    # print("Diffs")
+    # svid = 1
+    # numBad = 0
+    # badSVs = []
+    # for satTimes in times:
+    #     svid += 1
+    #     lastTime = 0
+    #     for time in satTimes:
+    #         hourMin = time.split(":")
+    #         newTime = int(hourMin[0])*60 + int(hourMin[1])
+    #         diff = newTime - lastTime
+    #         if diff > 240:
+    #             if svid not in badSVs:
+    #                 badSVs.append(svid)
+    #             print("SVID:",svid)
+    #             print(time)
+    #             print(satTimes)
+    #             numBad += 1
+    #         lastTime = newTime
+    # print()
+    # print("Num gaps of over 4 hours:",numBad)
+    # print(badSVs)
+    # print()
+    
     print("File contains",sum(counts),"ephemerides")
-    if(sum(counts) < 400):
-        print("WARNING less ephemerides in file than usual, typically over 400")
-    if sum(1 for count in counts if count >= 12) >= 24:
+    if(sum(counts) < 350):
+        print("WARNING less ephemerides in file than usual, typically over 350")
+    if sum(1 for count in counts if count >= 11) >= 24:
         print("List is complete")
         return True
     else:
