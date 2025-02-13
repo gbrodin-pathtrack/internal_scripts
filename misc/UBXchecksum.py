@@ -1,3 +1,6 @@
+import re
+PATTERN = r'//.*?$|/\*.*?\*/'
+
 text = """
             0x06, 0x8A,				/* UBX-CFG-VALSET */
             0x51, 0x00,				/* length 80 */
@@ -54,7 +57,8 @@ text = """
 text = text.split("\n")
 bytes = []
 for line in text:
-    nums = line.split("/")[0].strip().split(',')
+    line = re.sub(PATTERN, '', line, flags=re.DOTALL)
+    nums = line.strip().split(',')
     nums = [x for x in nums if x]
     for num in nums:
         bytes.append(int(num,16))
