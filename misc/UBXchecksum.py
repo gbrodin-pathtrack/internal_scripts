@@ -1,3 +1,5 @@
+#input UBX message not including 2 UBX header bytes and 2 UBX checksum bytes as these are not part of the checksum range
+
 UBX_MESSAGE = """
             0x06, 0x8A,				/* UBX-CFG-VALSET */
             0x51, 0x00,				/* length 80 */
