@@ -74,6 +74,15 @@ for line in text:
 checkA = 0
 checkB = 0
 
+payloadLen = len(bytes)-4
+payloadLenL = payloadLen & 0xFF
+payloadLenH = (payloadLen>>8) & 0xFF
+
+if bytes[2] != payloadLenL or bytes[3] != payloadLenH:
+    bytes[2] = payloadLenL
+    bytes[3] = payloadLenH
+    print("Payload length didn't match, modified prior to checksum calc")
+
 for byte in bytes:
     checkA += byte
     checkA &= 0xFF
@@ -81,8 +90,5 @@ for byte in bytes:
     checkB &= 0xFF
 
 print("check sum:","0x{:02x}".format(checkA).upper().replace('X','x')+",","0x{:02x}".format(checkB).upper().replace('X','x'))
-payloadLen = len(bytes)-4
-payloadLenL = payloadLen & 0xFF
-payloadLenH = (payloadLen>>8) & 0xFF
 print("Payload length:","0x{:02x}".format(payloadLenL).upper().replace('X','x')+",","0x{:02x}".format(payloadLenH).upper().replace('X','x')+",")
 print(".length = ",len(bytes)+4)
