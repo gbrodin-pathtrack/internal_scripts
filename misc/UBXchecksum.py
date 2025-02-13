@@ -1,7 +1,4 @@
-import re
-PATTERN = r'//.*?$|/\*.*?\*/'
-
-text = """
+UBX_MESSAGE = """
             0x06, 0x8A,				/* UBX-CFG-VALSET */
             0x51, 0x00,				/* length 80 */
             0x00,					/* msg version 0 */
@@ -54,6 +51,15 @@ text = """
             0x00,					/* Off */
 """
 
+import re
+import sys
+PATTERN = r'//.*?$|/\*.*?\*/'
+
+if len(sys.argv) > 1:
+    text = sys.argv[1]
+else:
+    text = UBX_MESSAGE
+
 text = text.split("\n")
 bytes = []
 for line in text:
@@ -73,8 +79,8 @@ for byte in bytes:
     checkB &= 0xFF
 
 print("check sum:","0x{:02x}".format(checkA).upper().replace('X','x')+",","0x{:02x}".format(checkB).upper().replace('X','x'))
-print(".length = ",len(bytes)+4)
 payloadLen = len(bytes)-4
 payloadLenL = payloadLen & 0xFF
 payloadLenH = (payloadLen>>8) & 0xFF
 print("Payload length:","0x{:02x}".format(payloadLenL).upper().replace('X','x')+",","0x{:02x}".format(payloadLenH).upper().replace('X','x')+",")
+print(".length = ",len(bytes)+4)
