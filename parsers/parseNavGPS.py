@@ -36,11 +36,11 @@ def parseObs(data : np.ndarray, obs : dict) -> int:
     if obsType == OBS_TYPE_NAV:
         obs["type"] = "NAV"
         parseNAVObs(data[5:40], obs)
-        return 40, obs
+        return 40
     elif obsType == OBS_TYPE_MEASX:
         obs["type"] = "MEASX"
         parseMEASXObs(data[5:], obs)
-        return 6 + (5*numSVs), obs
+        return 6 + (5*numSVs)
     elif obsType == OBS_TYPE_START:
         obs["type"] = "Start"
         obs["vbatt"] = data[6]
@@ -48,7 +48,7 @@ def parseObs(data : np.ndarray, obs : dict) -> int:
         obs["type"] = "Invalid"
         print("Obs with type 0x11 set")
 
-    return 7, obs
+    return 7
 
 def parseNavGPSLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     outputArr = []
