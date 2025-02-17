@@ -129,3 +129,5 @@ else:
 for fileName in wantedFiles:
     #only produce a combined file if there are more than 1 dat files
     parseDatFile(fileName)
+
+#test
