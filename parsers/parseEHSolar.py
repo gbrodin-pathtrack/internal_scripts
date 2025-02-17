@@ -1,7 +1,8 @@
 from datetime import timedelta
+import numpy as np
 from parsers.parsePackedTime import parsePackedTime
 
-def parseEHSolarLine(data, commonHeader, lineNum):
+def parseEHSolarLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     #convert ptTimePacked to python datetime
     startDateTime = parsePackedTime(data[:5])
 

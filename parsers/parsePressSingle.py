@@ -1,4 +1,5 @@
 import datetime
+import numpy as np
 
 def decode16BitPress(value, sensor):
     if sensor == 0: #mini depth
@@ -11,7 +12,7 @@ def decode16BitPress(value, sensor):
         else:
             return value-55500
 
-def parsePressSingleLine(data, commonHeader, lineNum):
+def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     outputArr = []
     index = 0
 

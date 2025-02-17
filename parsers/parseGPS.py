@@ -1,4 +1,5 @@
 import datetime
+import numpy as np
 
 #ADC ref is 1V, 8bit scale = 255 divisions, voltage read is 1/5 of actual vbatt so * 5
 VBATT_SCALE = (5/255)
@@ -110,7 +111,7 @@ def parseObs(line, index, lineNum):
     #return obs info and list of sat infos
     return satArr, index
 
-def parseGPSLine(data, commonHeader, lineNum):
+def parseGPSLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     outputArr = []
     index = 0
     while index < len(data):

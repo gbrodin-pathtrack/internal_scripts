@@ -5,7 +5,7 @@ from parsers.parsePackedTime import parsePackedTime
 #used to convert from range as stored in header
 ACCEL_SCALES = [2, 16, 4, 8]
 
-def parseAccelLine(data, commonHeader, lineNum):
+def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     #take scale from common header
     accelScaleCode = (commonHeader[0] & 0x0C) >> 2
     accelScale = ACCEL_SCALES[accelScaleCode]
