@@ -25,11 +25,11 @@ def parseNAVObs(data : np.ndarray, obs : dict):
     obs["speedAcc (m/s)"] = parseUInt32(data[30:34]) / 1000
 
 
-def parseObs(data : np.ndarray) -> tuple[int, dict]:
+def parseObs(data : np.ndarray, obs : dict) -> int:
     #parse common data and create obs
     time = parsePackedTime(data[:5])
     numSVs = data[5] & 0x3F
-    obs = {"time":time,"type":0,"numSV":numSVs}
+    obs.update({"time":time,"type":0,"numSV":numSVs})
 
     #check data type and pass to relevant parser
     obsType = data[5] & 0xC0
@@ -54,7 +54,8 @@ def parseNavGPSLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int)
     outputArr = []
     index = 0
     while index < len(data):
-        index, obs = parseObs(data[index:])
+        obs = {"line":lineNum}
+        index += parseObs(data[index:], obs)
         outputArr.append(obs)
 
     return{"GPS_NAV":outputArr}
