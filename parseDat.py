@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from os import listdir
 from os.path import isfile, join
-
+import sys
 import time
 
 from parsers.parseGPS import parseGPSLine
@@ -118,8 +118,14 @@ def parseDatFile(fileName):
     print("Time writing output files",end-start)
     print()
 
-#run parseDatFile on every file in root directory that starts with "Obs" and ends with ".dat"
-wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.startswith("Obs") and f.endswith(".dat")]
+#if CLI given take arguments as list of files
+if len(sys.argv) > 1:
+    wantedFiles= sys.argv[1:]
+#no command line args given, auto select all dat files in current directory
+else:
+    #Every file name in current directory that starts with "Obs" and ends with ".dat"
+    wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.startswith("Obs") and f.endswith(".dat")]
+
 for fileName in wantedFiles:
     #only produce a combined file if there are more than 1 dat files
     parseDatFile(fileName)
