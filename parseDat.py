@@ -15,19 +15,19 @@ from parsers.parseNavGPSTemp import parseNavGPSTempLine
 USE_PICKLE = False
 
 #add headers here without the UHF bit set, UHF bit will be extracted and handled the same for all header types
-HEADERS = {0x90:("GPS",parseGPSLine),
-           0x98:("GPS_NAV_Temp",parseNavGPSTempLine),
-           0xC0:("PressSingle",parsePressSingleLine),
-           0xA0:("Accel",parseAccelLine),
-           0xA2:("Accel",parseAccelLine),
-           0xA4:("Accel",parseAccelLine),
-           0xA6:("Accel",parseAccelLine),
-           0xA8:("Accel",parseAccelLine),
-           0xAA:("Accel",parseAccelLine),
-           0xAC:("Accel",parseAccelLine),
-           0xAE:("Accel",parseAccelLine),
-           0xD2:("ImmersionAccel",parseImmersionAccelLine),
-           0xE0:("EHSolar",parseEHSolarLine)
+HEADERS = {0x90:parseGPSLine,
+           0x98:parseNavGPSTempLine,
+           0xC0:parsePressSingleLine,
+           0xA0:parseAccelLine,
+           0xA2:parseAccelLine,
+           0xA4:parseAccelLine,
+           0xA6:parseAccelLine,
+           0xA8:parseAccelLine,
+           0xAA:parseAccelLine,
+           0xAC:parseAccelLine,
+           0xAE:parseAccelLine,
+           0xD2:parseImmersionAccelLine,
+           0xE0:parseEHSolarLine
            }
 
 def parseDatFile(fileName):
@@ -61,7 +61,7 @@ def parseDatFile(fileName):
         tagID = "logger"
         dataStart = 3
         if uhfType == 1:
-            tagID = str(line[3] + (line[4]<<8))
+            tagID = "Tag"+str(line[3] + (line[4]<<8))
             dataStart = 5
 
         #create entry for tag ID if needed
@@ -75,20 +75,21 @@ def parseDatFile(fileName):
             tags[tagID]["Unknown"].append(line)
             continue
         
-        #create data type entry if needed
-        dataTypeStr = HEADERS[dataType][0]
-        dataTypeHandler = HEADERS[dataType][1]
-        if dataTypeStr not in tags[tagID].keys():
-            tags[tagID][dataTypeStr] = []
+        #get handler function from data type byte
+        dataTypeHandler = HEADERS[dataType]
 
-        #strip common header and invalid bytes
+        #slice data and common header to be passed
         data = line[dataStart:length]
-
         commonHeader = line[:dataStart]
-
         
-        #pass line of data and reference to output array to handler function
-        dataTypeHandler(data, commonHeader, lineNum, tags[tagID][dataTypeStr])
+        #pass data, header and line num to handler function
+        parsedDataTypes = dataTypeHandler(data, commonHeader, lineNum)
+        
+        #unpack returned data
+        for dataTypeStr, parsedData in parsedDataTypes.items():
+            if dataTypeStr not in tags[tagID].keys():
+                tags[tagID][dataTypeStr] = []
+            tags[tagID][dataTypeStr].extend(parsedData)
 
     end = time.time()
     print("Time parsing lines",end-start)

@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 import numpy as np
 from parsers.parsePackedTime import parsePackedTime
 
-def parseNavGPSTempLine(data, commonHeader, lineNum, outputArr):
+def parseNavGPSTempLine(data, commonHeader, lineNum):
+    outputArr = []
     rawObsArr = [data[i:i+8] for i in range(0, len(data), 8)]
 
     for rawObs in rawObsArr:
@@ -16,3 +17,5 @@ def parseNavGPSTempLine(data, commonHeader, lineNum, outputArr):
         obs["vbat"] = rawObs[6]
         obs["ttf"] = rawObs[7]
         outputArr.append(obs)
+
+    return{"GPS_NAV_Temp":outputArr}

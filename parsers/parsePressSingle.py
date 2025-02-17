@@ -11,7 +11,8 @@ def decode16BitPress(value, sensor):
         else:
             return value-55500
 
-def parsePressSingleLine(data, commonHeader, lineNum, outputArr):
+def parsePressSingleLine(data, commonHeader, lineNum):
+    outputArr = []
     index = 0
 
     format = (data[0] & 0xF8) >> 3
@@ -117,3 +118,5 @@ def parsePressSingleLine(data, commonHeader, lineNum, outputArr):
             index += 2
             pressObs = {"line":lineNum,"datetime":obsDatetime, "pressure":press}
             outputArr.append(pressObs)
+
+    return {"PressSingle":outputArr}

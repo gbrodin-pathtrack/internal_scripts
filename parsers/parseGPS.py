@@ -110,8 +110,11 @@ def parseObs(line, index, lineNum):
     #return obs info and list of sat infos
     return satArr, index
 
-def parseGPSLine(data, commonHeader, lineNum, outputArr):
+def parseGPSLine(data, commonHeader, lineNum):
+    outputArr = []
     index = 0
     while index < len(data):
         newSats, index = parseObs(data, index, lineNum)
         outputArr.extend(newSats)
+    
+    return {"GPS":outputArr}

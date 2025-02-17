@@ -5,7 +5,7 @@ from parsers.parsePackedTime import parsePackedTime
 #used to convert from range as stored in header
 ACCEL_SCALES = [2, 16, 4, 8]
 
-def parseAccelLine(data, commonHeader, lineNum, outputArr):
+def parseAccelLine(data, commonHeader, lineNum):
     #take scale from common header
     accelScaleCode = (commonHeader[0] & 0x0C) >> 2
     accelScale = ACCEL_SCALES[accelScaleCode]
@@ -40,5 +40,5 @@ def parseAccelLine(data, commonHeader, lineNum, outputArr):
         obs["time"] = obsDatetime
         obsDatetime += timeStep
 
-    outputArr.extend(accelValues)
+    return {"Accel":accelValues}
     

@@ -1,7 +1,7 @@
 from datetime import timedelta
 from parsers.parsePackedTime import parsePackedTime
 
-def parseEHSolarLine(data, commonHeader, lineNum, outputArr):
+def parseEHSolarLine(data, commonHeader, lineNum):
     #convert ptTimePacked to python datetime
     startDateTime = parsePackedTime(data[:5])
 
@@ -18,4 +18,4 @@ def parseEHSolarLine(data, commonHeader, lineNum, outputArr):
         obs["time"] = obsDatetime
         obsDatetime += timeStep
 
-    outputArr.extend(solarValues)
+    return {"EHSolar":solarValues}
