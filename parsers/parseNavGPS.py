@@ -39,7 +39,7 @@ def parseObs(data : np.ndarray, obs : dict) -> int:
         return 40
     elif obsType == OBS_TYPE_MEASX:
         obs["type"] = "MEASX"
-        parseMEASXObs(data[5:], obs)
+        parseMEASXObs(data[6:], obs)
         return 6 + (5*numSVs)
     elif obsType == OBS_TYPE_START:
         obs["type"] = "Start"

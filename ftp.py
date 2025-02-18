@@ -80,6 +80,11 @@ def parseRINEX(fileName):
         
         if len(ephem['text']) != 640:
             return True, "Incorrect number of characters in file "+fileName+" block starting on line "+str(ephemStart+index+1)+"\n"+ephem['text'],0
+
+        if ephem['text'][505:507] == '00':
+            ephem['healthy'] = True
+        else:
+            ephem['healthy'] = False
         
         ephems.append(ephem)
     print("Successful")
@@ -291,9 +296,13 @@ def combineEphems(newEphems: list, oldEphems: list):
 def validateEphems(ephems: list):
     print("Validating if list of ephemerides is complete ...")
     counts = [0]*32
+    unhealthy = [0]*32
     # times = [ [] for _ in range(32) ]
     for ephem in ephems:
         counts[ephem['sat']-1] += 1
+        if ephem['healthy'] == False:
+            unhealthy[ephem['sat']-1] += 1
+            counts[ephem['sat']-1] -= 1
     #     times[ephem['sat']-1].append(ephem['time'].strftime("%H:%M"))
     # for index, sat in enumerate(times):
     #     print("SVID:",index+1,", Num Ephemerides:",counts[index],", Ephemeris Times:",sat)
@@ -321,9 +330,12 @@ def validateEphems(ephems: list):
     # print(badSVs)
     # print()
     
-    print("File contains",sum(counts),"ephemerides")
+    print("File contains",sum(counts),"healthy ephemerides")
     if(sum(counts) < 350):
-        print("WARNING less ephemerides in file than usual, typically over 350")
+        print("WARNING less healthy ephemerides in file than usual, typically over 350")
+    print("File contains",sum(unhealthy),"unhealthy ephemerides")
+    if(sum(unhealthy) > 15):
+        print("WARNING over 15 unhealthy ephemerides in file")
     if sum(1 for count in counts if count >= 11) >= 24:
         print("List is complete")
         return True
