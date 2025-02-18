@@ -18,7 +18,7 @@ def parseNAVObs(data : np.ndarray, obs : dict):
     obs["lat (deg)"] = parseInt32(data[4:8]) * 1e-7
     obs["long (deg)"] = parseInt32(data[8:12]) * 1e-7
     obs["elipsoidHeight (m)"] = parseInt32(data[12:16]) / 1000
-    obs["pDOP"] = parseUInt16(data[16:18])
+    obs["pDOP"] = parseUInt16(data[16:18]) * 0.01
     obs["velN (m/s)"] = parseInt32(data[18:22]) / 1000
     obs["velE (m/s)"] = parseInt32(data[22:26]) / 1000
     obs["velD (m/s)"] = parseInt32(data[26:30]) / 1000
@@ -35,7 +35,7 @@ def parseObs(data : np.ndarray, obs : dict) -> int:
     obsType = data[5] & 0xC0
     if obsType == OBS_TYPE_NAV:
         obs["type"] = "NAV"
-        parseNAVObs(data[5:40], obs)
+        parseNAVObs(data[6:40], obs)
         return 40
     elif obsType == OBS_TYPE_MEASX:
         obs["type"] = "MEASX"
