@@ -41,7 +41,7 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
         outputArr.append(pressObs)
         
         while(index < len(data)):
-            offset = data[index] + (data[index+1]<<8)
+            offset = int(data[index]) + (int(data[index+1])<<8)
             index += 2
             obsDatetime = startDatetime + datetime.timedelta(seconds=offset)
             pressRaw = data[index] + (data[index+1]<<8)
@@ -62,7 +62,7 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
         outputArr.append(pressObs)
         
         while(index < len(data)):
-            offset = data[index] + (data[index+1] << 8)
+            offset = int(data[index]) + (int(data[index+1]) << 8)
             index += 2
             obsDatetime = startDatetime + datetime.timedelta(seconds=offset)
             press = (data[index] * 40) + 1000
@@ -82,7 +82,7 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
         outputArr.append(pressObs)
         
         while(index < len(data)):
-            offset = data[index] + ((data[index+1] & 0x07)<<8)
+            offset = int(data[index]) + ((int(data[index+1]) & 0x07)<<8)
             temp = ((data[index+1]) & 0xF8)>>3
             index += 2
             obsDatetime = startDatetime + datetime.timedelta(seconds=offset)
@@ -99,7 +99,7 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
         outputArr.append(pressObs)
         
         while(index < len(data)):
-            offset = data[index] + ((data[index+1] & 0x07)<<8)
+            offset = int(data[index]) + ((int(data[index+1]) & 0x07)<<8)
             temp = (((((data[index+1]) & 0xF8)<<5) + data[index+2]) * 0.08) - 40
             index += 3
             obsDatetime = startDatetime + datetime.timedelta(seconds=offset)
@@ -108,7 +108,7 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
             outputArr.append(pressObs)
     
     if format == 4:
-        interval = data[index]
+        interval = int(data[index])
         index += 1
         offset = 0           
         while(index < len(data)):
