@@ -15,14 +15,19 @@ def parseNAVObs(data : np.ndarray, obs : dict):
     nanos = parseInt32(data[:4])
     timediff = timedelta(microseconds=nanos/1000)
     obs["time"] += timediff
-    obs["lat (deg)"] = parseInt32(data[4:8]) * 1e-7
-    obs["long (deg)"] = parseInt32(data[8:12]) * 1e-7
-    obs["elipsoidHeight (m)"] = parseInt32(data[12:16]) / 1000
+    obs["lat"] = parseInt32(data[4:8]) * 1e-7
+    obs["long"] = parseInt32(data[8:12]) * 1e-7
+    obs["elipsoidHeight"] = parseInt32(data[12:16]) / 1000
     obs["pDOP"] = parseUInt16(data[16:18]) * 0.01
-    obs["velN (m/s)"] = parseInt32(data[18:22]) / 1000
-    obs["velE (m/s)"] = parseInt32(data[22:26]) / 1000
-    obs["velD (m/s)"] = parseInt32(data[26:30]) / 1000
-    obs["speedAcc (m/s)"] = parseUInt32(data[30:34]) / 1000
+    velN =  parseInt32(data[18:22])
+    obs["velN"] = velN / 1000
+    velE = parseInt32(data[22:26]) 
+    obs["velE"] = velE / 1000
+    velD = parseInt32(data[26:30])
+    obs["velD"] = velD / 1000
+    obs["speedAcc"] = parseUInt32(data[30:34]) / 1000
+    obs["vel2D"] = np.sqrt(velN**2 + velE**2) / 1000
+    obs["vel3D"] = np.sqrt(velN**2 + velE**2 + velD**2) / 1000
 
 
 def parseObs(data : np.ndarray, obs : dict) -> int:
