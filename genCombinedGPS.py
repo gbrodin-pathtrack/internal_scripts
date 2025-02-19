@@ -2,7 +2,7 @@ from os import listdir
 from os.path import isfile, join
 import pandas as pd
 
-USE_PICKLE = True
+USE_PICKLE = False
 
 if USE_PICKLE:
     wantedExtension = ".pkl"

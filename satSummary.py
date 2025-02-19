@@ -4,7 +4,7 @@ from os import listdir
 from os.path import isfile, join
 import sys
 
-USE_PICKLE = True
+USE_PICKLE = False
 
 def processSatsFile(fileName):
     #show which file is being processed
