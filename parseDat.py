@@ -12,13 +12,13 @@ from parsers.parseImmersionAccel import parseImmersionAccelLine
 from parsers.parseEHSolar import parseEHSolarLine
 from parsers.parseNavGPSTemp import parseNavGPSTempLine
 from parsers.parseNavGPS import parseNavGPSLine
+from parsers.parsePressureImmersion import parsePressureImmersionLine
 
 USE_PICKLE = False
 
 #add headers here without the UHF bit set, UHF bit will be extracted and handled the same for all header types
 HEADERS = {0x90:parseGPSLine,
            0x98:parseNavGPSLine,
-           0xC0:parsePressSingleLine,
            0xA0:parseAccelLine,
            0xA2:parseAccelLine,
            0xA4:parseAccelLine,
@@ -27,6 +27,8 @@ HEADERS = {0x90:parseGPSLine,
            0xAA:parseAccelLine,
            0xAC:parseAccelLine,
            0xAE:parseAccelLine,
+           0xB2:parsePressureImmersionLine,
+           0xC0:parsePressSingleLine,
            0xD2:parseImmersionAccelLine,
            0xE0:parseEHSolarLine
            }
