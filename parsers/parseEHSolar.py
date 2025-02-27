@@ -1,11 +1,11 @@
 from datetime import timedelta
 import numpy as np
-from parsers.parsePackedTime import parsePackedTime
+from parsers.parsePackedTime import parsePackedTime, parsePackedTimeZeroSS
 from parsers.parseInt import parseUInt16
 
 def parseEHSolarLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     #convert ptTimePacked to python datetime
-    startDateTime = parsePackedTime(data[:5])
+    startDateTime = parsePackedTimeZeroSS(data[:5])
 
     interval = parseUInt16(data[5:7])
 
