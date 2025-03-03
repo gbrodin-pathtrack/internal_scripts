@@ -5,6 +5,7 @@ from os import listdir
 from os.path import isfile, join
 
 USE_PICKLE = True
+ZERO_SCALE = False
 
 if USE_PICKLE:
     wantedExtension = ".pkl"
@@ -46,6 +47,8 @@ ax1.set_xlabel("Timeout (s)")
 ax1.set_ylabel("On time per fix (s)", color=col)
 ax1.plot(timeoutDF["timeout"], timeoutDF["onTimePerFix"], color=col)
 ax1.tick_params(axis="y", labelcolor=col)
+if ZERO_SCALE:
+    ax1.set_ylim(0,None)
 
 ax2 = ax1.twinx()
 
@@ -53,5 +56,7 @@ col = "tab:blue"
 ax2.set_ylabel("Success Rate (%)", color=col)
 ax2.plot(timeoutDF["timeout"],timeoutDF["successRate"], color=col)
 ax2.tick_params(axis="y", labelcolor=col)
+if ZERO_SCALE:
+    ax2.set_ylim(0,100)
 
 plt.show()
