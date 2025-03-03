@@ -2,13 +2,13 @@ from os import listdir
 from os.path import isfile, join
 import pandas as pd
 
-USE_PICKLE = False
+USE_PICKLE = True
 
 if USE_PICKLE:
     wantedExtension = ".pkl"
 else:
     wantedExtension = ".csv"
-wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS"+wantedExtension)]
+wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS"+wantedExtension) and not f.startswith("combined")]
 
 #loop over wanted files and generate a combined version
 if len(wantedFiles) > 1:
@@ -24,4 +24,5 @@ if len(wantedFiles) > 1:
         df_combined.to_pickle("combined_GPS.pkl")
     else:
         df_combined.to_csv("combined_GPS.csv",index=False)
+
     wantedFiles.insert(0,"combined_GPS"+wantedExtension)
