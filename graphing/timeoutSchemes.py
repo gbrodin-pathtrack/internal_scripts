@@ -5,20 +5,14 @@ from os import listdir
 from os.path import isfile, join
 
 consecutiveTimeouts = 0
-prevTimedOut = False
 def currAdaptiveTimeout(obs, timeout, step, min):
     global consecutiveTimeouts
-    global prevTimedOut
-
-    if prevTimedOut:
-        consecutiveTimeouts += 1
 
     currTimeout = max(min, timeout-step*consecutiveTimeouts)
 
     if obs.TTF >= currTimeout:
-        prevTimedOut = True
+        consecutiveTimeouts += 1
     else:
-        prevTimedOut = False
         consecutiveTimeouts = 0
     return currTimeout
         
