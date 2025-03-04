@@ -10,10 +10,11 @@ def currAdaptiveTimeout(obs, timeout, step, min):
     global consecutiveTimeouts
     global prevTimedOut
 
-    currTimeout = max(min, timeout-step*consecutiveTimeouts)
-
     if prevTimedOut:
         consecutiveTimeouts += 1
+
+    currTimeout = max(min, timeout-step*consecutiveTimeouts)
+
     if obs.TTF >= currTimeout:
         prevTimedOut = True
     else:
