@@ -10,11 +10,14 @@ def parseRawFile(fileName):
         lines = f.readlines()
         lines = [line.split() for line in lines[5:]]
     
+    tagID = int(fileName[-9:-4])
+
     obsArr = []
     for line in lines:
         obs = {}
         time = datetime(year=int(line[0]),month=1, day=1)
         time += timedelta(days=int(line[1])-1, seconds=int(float(line[2])))
+        obs["tagID"] = tagID
         obs["fixTime"] = time
         obs["TTF"] = int(line[4])
         obs["numSV"] = int(line[5])
