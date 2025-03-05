@@ -6,7 +6,8 @@ from os import listdir
 from os.path import isfile, join
 
 USE_PICKLE = True
-ZERO_SCALE = False
+
+SPLIT_PREV_FAIL = True
 
 if USE_PICKLE:
     wantedExtension = ".pkl"
@@ -52,13 +53,43 @@ accelBurstDF = pd.DataFrame({
 
 obsDF["burstID"] = obsDF.apply(lambda obs: accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["time"] - obs.fixTime < np.timedelta64(180))].tail(1).index[0], axis=1)
 
-x = accelBurstDF.iloc[obsDF.burstID].activePortion
-y = obsDF.numSV
+if SPLIT_PREV_FAIL:
+    obsDF["prevSuccess"] = obsDF["numSV"].shift(-1) > 4
+    obsDF["prevSuccess"][0] = True
 
-plt.scatter(x, y, marker='.', linewidth=0, alpha=0.1)
-plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)),color="black",linestyle=(0,(5,7)),linewidth=1)
-plt.xlabel("Percentage of 'active' points (%)")
-plt.ylabel("Num SVs")
-plt.title("Accelerometer activity to GPS performance")
-plt.show()
+    prevSuccess = obsDF[obsDF["prevSuccess"] == True]
+    prevFail = obsDF[obsDF["prevSuccess"] == False]
+
+    x = accelBurstDF.iloc[prevSuccess.burstID].activePortion
+    y = prevSuccess.numSV
+
+    plt.scatter(x, y, marker='.', linewidth=0, alpha=0.1)
+    plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)),color="black",linestyle=(0,(5,7)),linewidth=1)
+    plt.xlabel("Percentage of 'active' points (%)")
+    plt.ylabel("Num SVs")
+    plt.title("Accelerometer activity to GPS performance (prev success)")
+
+    plt.figure()
+
+    x = accelBurstDF.iloc[prevFail.burstID].activePortion
+    y = prevFail.numSV
+
+    plt.scatter(x, y, marker='.', linewidth=0, alpha=0.1)
+    plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)),color="black",linestyle=(0,(5,7)),linewidth=1)
+    plt.xlabel("Percentage of 'active' points (%)")
+    plt.ylabel("Num SVs")
+    plt.title("Accelerometer activity to GPS performance (prev fail)")
+
+    plt.show()
+else:
+    x = accelBurstDF.iloc[obsDF.burstID].activePortion
+    y = obsDF.numSV
+
+    plt.scatter(x, y, marker='.', linewidth=0, alpha=0.1)
+    plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)),color="black",linestyle=(0,(5,7)),linewidth=1)
+    plt.xlabel("Percentage of 'active' points (%)")
+    plt.ylabel("Num SVs")
+    plt.title("Accelerometer activity to GPS performance")
+
+    plt.show()
 
