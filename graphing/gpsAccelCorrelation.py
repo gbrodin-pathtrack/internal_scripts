@@ -54,8 +54,8 @@ accelBurstDF = pd.DataFrame({
 obsDF["burstID"] = obsDF.apply(lambda obs: accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["time"] - obs.fixTime < np.timedelta64(180))].tail(1).index[0], axis=1)
 
 if SPLIT_PREV_FAIL:
-    obsDF["prevSuccess"] = obsDF["numSV"].shift(-1) > 4
-    obsDF["prevSuccess"][0] = True
+    obsDF["prevSuccess"] = (obsDF["numSV"].shift(1) > 4) # | (obsDF["numSV"].shift(2) > 4)
+    obsDF.loc[[0],"prevSuccess"] = True
 
     prevSuccess = obsDF[obsDF["prevSuccess"] == True]
     prevFail = obsDF[obsDF["prevSuccess"] == False]
