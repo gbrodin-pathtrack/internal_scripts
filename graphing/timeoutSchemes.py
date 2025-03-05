@@ -106,7 +106,7 @@ for index, row in adaptTimeDF.iterrows():
 
 adaptTimeDF["onTime"] = adaptTimeDF.apply(lambda x: sum(obsDF.loc[obsDF["TTF"] < obsDF["AT"+str(x.name)]]["TTF"]) + sum(obsDF.loc[obsDF["TTF"] >= obsDF["AT"+str(x.name)]]["AT"+str(x.name)]), axis=1)
 adaptTimeDF["successes"] = adaptTimeDF.apply(lambda x: len(obsDF.loc[(obsDF["TTF"] <= obsDF["AT"+str(x.name)]) & (obsDF["numSV"] > 4)]), axis=1)
-#schemeDFArr.append(adaptTimeDF)
+schemeDFArr.append(adaptTimeDF)
 
 
 #calc on time and num successes for adaptive interval options
@@ -119,7 +119,7 @@ for index, row in adaptIntDF.iterrows():
 
 adaptIntDF["onTime"] = adaptIntDF.apply(lambda x: sum(obsDF.loc[obsDF["TTF"] < obsDF["AI"+str(x.name)]]["TTF"]) + sum(obsDF.loc[obsDF["TTF"] >= obsDF["AI"+str(x.name)]]["AI"+str(x.name)]), axis=1)
 adaptIntDF["successes"] = adaptIntDF.apply(lambda x: len(obsDF.loc[(obsDF["TTF"] <= obsDF["AI"+str(x.name)]) & (obsDF["numSV"] > 4)]), axis=1)
-#schemeDFArr.append(adaptIntDF)
+schemeDFArr.append(adaptIntDF)
 
 
 #calc on time and num successes for adaptive timeout interval options
