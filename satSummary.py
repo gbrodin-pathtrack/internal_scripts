@@ -77,6 +77,7 @@ def processSatsFile(fileName):
 
     print("Num SVs:")
     print(" - Average: %.2f" % np.mean(obsDF["numSV"]))
+    print(" - Maximum: %.1f" % obsDF["numSV"].max())
     print(" - 90th Percentile: %.1f" % np.percentile(obsDF["numSV"], 90))
     print(" - 10th Percentile: %.1f" % np.percentile(obsDF["numSV"], 10))
     print(" - Standard Deviation: %.1f" % np.std(obsDF["numSV"]))

@@ -5,25 +5,43 @@ from datetime import datetime, timedelta
 
 USE_PICKLE = True
 
+DIV_TTF_10 = True
+
 def parseRawFile(fileName):
     with open(fileName, "r") as f:
         lines = f.readlines()
-        lines = [line.split() for line in lines[5:]]
+        lines = [line.replace(',','.').split() for line in lines[5:]]
     
     tagID = int(fileName[-9:-4])
 
-    obsArr = []
+    satArr = []
     for line in lines:
+        lineSatArr = [{"ID":0}]
         obs = {}
         time = datetime(year=int(line[0]),month=1, day=1)
         time += timedelta(days=int(line[1])-1, seconds=int(float(line[2])))
         obs["tagID"] = tagID
         obs["fixTime"] = time
-        obs["TTF"] = int(line[4])
-        obs["numSV"] = int(line[5])
-        obsArr.append(obs)
+        obs["vbatt"] = float(line[3])
+        obs["TTF"] = int(line[4]) / (10 if DIV_TTF_10 else 1)
+        numSV = int(line[5])
+        obs["numSV"] = numSV
+        obs["numGPS"] = numSV
+        obs["numBeiDou"] = 0
+        obs["numGalileo"] = 0
+        for i in range(0,numSV*4,4):
+            sat = {}
+            sat["ID"] = int(line[6+i])
+            sat["CNR"] = int(line[9+i])
+            sat["codePhase"] = float(line[7+i])
+            lineSatArr.append(sat)
 
-    df = pd.DataFrame(obsArr)
+        for sat in lineSatArr:
+            sat.update(obs)
+
+        satArr.extend(lineSatArr)
+
+    df = pd.DataFrame(satArr)
 
     if USE_PICKLE:
         df.to_pickle(fileName[:-4]+"_GPS.pkl")

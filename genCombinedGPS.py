@@ -20,6 +20,7 @@ if len(wantedFiles) > 1:
             df = pd.read_csv(file)
         dfArr.append(df)
     df_combined = pd.concat(dfArr)
+    df_combined.reset_index(inplace=True, drop=True)
     if USE_PICKLE:
         df_combined.to_pickle("combined_GPS.pkl")
     else:
