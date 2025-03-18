@@ -107,10 +107,14 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
             pressObs = {"line":lineNum,"headerTime":startDatetime,"offset":offset,"datetime":obsDatetime,"temp":temp}
             outputArr.append(pressObs)
     
-    if format == 4:
-        interval = int(data[index])
-        index += 1
-        offset = 0           
+    if format == 4 or format == 5:
+        interval = int(subsecond)
+        tempFlag = False
+        if format == 5:
+            tempFlag = True
+            temp = ((data[index])*0.5)-40
+            index += 1
+        offset = 0
         while(index < len(data)):
             offset += interval
             obsDatetime = startDatetime + datetime.timedelta(seconds=offset)
@@ -118,6 +122,9 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
             press = decode16BitPress(pressRaw, sensor)
             index += 2
             pressObs = {"line":lineNum,"datetime":obsDatetime, "pressure":press}
+            if tempFlag:
+                tempFlag = False
+                pressObs["temp"] = temp
             outputArr.append(pressObs)
 
     return {"PressSingle":outputArr}
