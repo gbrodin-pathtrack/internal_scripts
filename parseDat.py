@@ -86,7 +86,12 @@ def parseDatFile(fileName):
         commonHeader = line[:dataStart]
         
         #pass data, header and line num to handler function
-        parsedDataTypes = dataTypeHandler(data, commonHeader, lineNum)
+        try:
+            parsedDataTypes = dataTypeHandler(data, commonHeader, lineNum)
+        except ValueError as e:
+            print("Skipping line",lineNum,"due to ValueError:")
+            print(e)
+            continue
         
         #unpack returned data
         for dataTypeStr, parsedData in parsedDataTypes.items():

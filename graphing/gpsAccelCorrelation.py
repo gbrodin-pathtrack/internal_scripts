@@ -14,23 +14,17 @@ if USE_PICKLE:
 else:
     wantedExtension = ".csv"
 #get every file in root directory that ends with "_GPS"
-gpsWantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS"+wantedExtension)]
+gpsWantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS_Obs"+wantedExtension)]
 
 gpsFileName = gpsWantedFiles[0]
 
 #read file into data frame
 if USE_PICKLE:
-    fullDF = pd.read_pickle(gpsFileName)
+    obsDF = pd.read_pickle(gpsFileName)
 else:
-    fullDF = pd.read_csv(gpsFileName)
+    obsDF = pd.read_csv(gpsFileName)
 #convert datetime string to datetime
-fullDF["fixTime"] = pd.to_datetime(fullDF["fixTime"])
-
-#create new dataframe from rows with satelite ID of 0, these are dummy rows with only obs info attached
-#obsDF = pd.DataFrame(fullDF.loc[fullDF["ID"] == 0]).reset_index(drop=True)
-#drop sat info columns
-#obsDF.drop([col for col in obsDF.columns if col in ["ID","CNR","codePhase","dopplerMS","dopplerHz"]],axis=1,inplace=True)
-obsDF = fullDF
+obsDF["fixTime"] = pd.to_datetime(obsDF["fixTime"])
 
 accelWantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_Accel"+wantedExtension)]
 accelFileName = accelWantedFiles[0]

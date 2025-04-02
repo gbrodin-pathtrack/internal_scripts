@@ -11,22 +11,17 @@ if USE_PICKLE:
 else:
     wantedExtension = ".csv"
 #get every file in root directory that ends with "_GPS"
-wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS"+wantedExtension)]
+wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS_Obs"+wantedExtension)]
 
 fileName = wantedFiles[0]
 
 #read file into data frame
 if USE_PICKLE:
-    fullDF = pd.read_pickle(fileName)
+    obsDF = pd.read_pickle(fileName)
 else:
-    fullDF = pd.read_csv(fileName)
+    obsDF = pd.read_csv(fileName)
 #convert datetime string to datetime
-fullDF["fixTime"] = pd.to_datetime(fullDF["fixTime"])
-
-#create new dataframe from rows with satelite ID of 0, these are dummy rows with only obs info attached
-obsDF = pd.DataFrame(fullDF.loc[fullDF["ID"] == 0]).reset_index(drop=True)
-#drop sat info columns
-obsDF.drop([col for col in obsDF.columns if col in ["ID","CNR","codePhase","dopplerMS","dopplerHz"]],axis=1,inplace=True)
+obsDF["fixTime"] = pd.to_datetime(obsDF["fixTime"])
 
 plt.title("TTF stats over time")
 plt.xlabel("Time")

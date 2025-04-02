@@ -12,24 +12,19 @@ if USE_PICKLE:
 else:
     wantedExtension = ".csv"
 #get every file in root directory that ends with "_GPS"
-wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS"+wantedExtension)]
+wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS_Obs"+wantedExtension)]
 
 fileName = wantedFiles[0]
 
 #read file into data frame
 if USE_PICKLE:
-    fullDF = pd.read_pickle(fileName)
+    obsDF = pd.read_pickle(fileName)
 else:
-    fullDF = pd.read_csv(fileName)
+    obsDF = pd.read_csv(fileName)
 #convert datetime string to datetime
-fullDF["fixTime"] = pd.to_datetime(fullDF["fixTime"])
+obsDF["fixTime"] = pd.to_datetime(obsDF["fixTime"])
 
-#create new dataframe from rows with satelite ID of 0, these are dummy rows with only obs info attached
-obsDF = pd.DataFrame(fullDF.loc[fullDF["ID"] == 0]).reset_index(drop=True)
-#drop sat info columns
-obsDF.drop([col for col in obsDF.columns if col in ["ID","CNR","codePhase","dopplerMS","dopplerHz"]],axis=1,inplace=True)
-
-timeoutOptions = np.arange(0.1,20.1,0.1)
+timeoutOptions = np.arange(2,9,1)
 timeoutDF = pd.DataFrame(timeoutOptions,columns=["timeout"])
 timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["TTF"] < x.timeout]["TTF"]) + x.timeout*len(obsDF.loc[obsDF["TTF"] >= x.timeout]), axis=1)
 timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF["TTF"] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)

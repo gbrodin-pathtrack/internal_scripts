@@ -16,7 +16,8 @@ def parseRawFile(fileName):
 
     satArr = []
     for line in lines:
-        lineSatArr = [{"ID":0}]
+        #lineSatArr = [{"ID":0}]
+        lineSatArr = [{}]
         obs = {}
         time = datetime(year=int(line[0]),month=1, day=1)
         time += timedelta(days=int(line[1])-1, seconds=int(float(line[2])))
@@ -34,7 +35,7 @@ def parseRawFile(fileName):
             sat["ID"] = int(line[6+i])
             sat["CNR"] = int(line[9+i])
             sat["codePhase"] = float(line[7+i])
-            lineSatArr.append(sat)
+            #lineSatArr.append(sat)
 
         for sat in lineSatArr:
             sat.update(obs)
@@ -44,9 +45,9 @@ def parseRawFile(fileName):
     df = pd.DataFrame(satArr)
 
     if USE_PICKLE:
-        df.to_pickle(fileName[:-4]+"_GPS.pkl")
+        df.to_pickle(fileName[:-4]+"_GPS_Obs.pkl")
     else:
-        df.to_csv(fileName[:-4]+"_GPS.csv",index=False)
+        df.to_csv(fileName[:-4]+"_GPS_Obs.csv",index=False)
 
 wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.startswith("Obs") and f.endswith(".raw")]
 
