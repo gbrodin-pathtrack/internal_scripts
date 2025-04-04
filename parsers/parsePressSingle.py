@@ -1,5 +1,6 @@
 import datetime
 import numpy as np
+from parsers.parsePackedTime import parsePackedTimeZeroSS
 
 def decode16BitPress(value, sensor):
     if sensor == 0: #mini depth
@@ -14,22 +15,14 @@ def decode16BitPress(value, sensor):
 
 def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     outputArr = []
-    index = 0
 
     format = (data[0] & 0xF8) >> 3
     sensor = data[0] & 0x07
-    index += 1    
 
-    year = data[index] & 0x7F
-    month = ((data[index] & 0x80) >> 7) + ((data[index+1] & 0x07) << 1)
-    day = (data[index+1] & 0xF8) >> 3
-    hour = data[index+2] & 0x1F
-    minute = ((data[index+2] & 0xE0) >> 5) + ((data[index+3] & 0x07) << 3)
-    second = ((data[index+3] & 0xF8) >> 3) + ((data[index+4] & 0x01) << 5)
-    subsecond = (data[index+4] & 0xFE) >> 1
-    index += 5
+    startDatetime = parsePackedTimeZeroSS(data[1:6])
+    subsecond = (data[5] & 0xFE) >> 1
 
-    startDatetime = datetime.datetime(year=2000+year, month=month, day=day, hour=hour, minute=minute, second=second)
+    index = 6
     
     if format == 0:
         pressRaw = data[index] + (data[index+1]<<8)
