@@ -12,14 +12,15 @@ NF = 6
 HEADER = True
 
 def NbSymbolPayloadFrac(header : bool, pl, crc, sf, cr):
-    #return ((pl*8 + crc*16 - 4*(sf-(7 if header else 2))) * (4+cr)) / (4*sf)
-    return (((pl*8) + (crc*16) - (4*(sf - 7)))*(4 + cr)) / (4 * sf)
+    return ((pl*8 + crc*16 - 4*(sf-(7 if header else 2))) * (4+cr)) / (4*sf)
+    #return (((pl*8) + (crc*16) - (4*(sf - 7)))*(4 + cr)) / (4 * sf)
 
 def NbSymbolPayload(header : bool, pl, crc, sf, cr):
-    return np.ceil(NbSymbolPayloadFrac(header, pl, crc, sf, cr) * (4+cr))
+    #return np.ceil(NbSymbolPayloadFrac(header, pl, crc, sf, cr) * (4+cr))
+    return np.ceil(NbSymbolPayloadFrac(header, pl, crc, sf, cr) / (4+cr)) * (4+cr)
 
 def NbSymbolSX(header : bool, pr, pl, crc, sf, cr):
-    return pr + (6.25 if sf<7 else 4.25) + 8 + np.ceil((8*pl+16*crc-4*sf+(0 if sf<7 else 8)+(20 if header else 0))/4*sf)*(4+cr)
+    return pr + (6.25 if sf<7 else 4.25) + 8 + np.ceil((8*pl+16*crc-4*sf+(0 if sf<7 else 8)+(20 if header else 0))/(4*sf))*(4+cr)
     
 def TotalTimeOnAirSX(header : bool, pr, pl, crc, sf, cr, bw):
     return ((2**sf)/bw)*NbSymbolSX(header, pr, pl, crc, sf, cr)
@@ -45,7 +46,7 @@ df = pd.DataFrame(combos, columns=["SF","BW"])
 
 df["rawBitRate"] = df.apply(lambda x: RawBitRate(x.SF, x.BW, CR)*1000, axis=1)
 df["realBitRate"] = df.apply(lambda x: RealBitRate(HEADER, PR, PL, CRC, x.SF, CR, x.BW)*1000, axis=1)
-#df["realBitRateSX"] = df.apply(lambda x: RealBitRateSX(HEADER, PR, PL, CRC, x.SF, CR, x.BW)*1000, axis=1)
+df["realBitRateSX"] = df.apply(lambda x: RealBitRateSX(HEADER, PR, PL, CRC, x.SF, CR, x.BW)*1000, axis=1)
 df["sensitivity"] = df.apply(lambda x: sens(x.SF, x.BW, NF), axis=1)
 df["timeToSend"] = df.apply(lambda x: (512*8)/x.realBitRate, axis=1)
 
