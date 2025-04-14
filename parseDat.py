@@ -58,7 +58,8 @@ def parseDatFile(fileName):
         uhfType = line[0] & 0x1
 
         #extract length from common header
-        length = line[1] + (line[2]<<8)
+        length = line[1] + ((line[2]&0x0F)<<8)
+        #lineInfo = line[2]&0xF0
 
         #extract tag ID if applicable from common header
         tagID = "logger"
