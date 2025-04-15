@@ -33,6 +33,8 @@ HEADERS = {0x90:parseGPSLine,
            0xE0:parseEHSolarLine
            }
 
+LINE_OFFSET = 6
+
 def parseDatFile(fileName):
     print("Processing",fileName)
     start = time.time()
@@ -53,6 +55,9 @@ def parseDatFile(fileName):
     start = time.time()
 
     for lineNum, line in enumerate(byteLines):
+        #Add offset so line numbers match line numbers in dat file
+        lineNum += LINE_OFFSET
+
         #extract data type and UHF flag from common header
         dataType = line[0] & 0xFE
         uhfType = line[0] & 0x1
