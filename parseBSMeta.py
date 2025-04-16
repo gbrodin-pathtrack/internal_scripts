@@ -4,7 +4,7 @@ from os import listdir
 from os.path import isfile, join
 import sys
 
-SIGNAL_STRENGTH = {0: "-inf..-100", 1:"-99..inf", 2:"-inf..-90", 3:"-89..-80", 4:"-79..-70", 5:"-69..-60", 6:"-59..-50", 7:"-49..inf"}
+SIGNAL_STRENGTH = {0: "'-inf..-100", 1:"'-99..inf", 2:"'-inf..-90", 3:"'-89..-80", 4:"'-79..-70", 5:"'-69..-60", 6:"'-59..-50", 7:"'-49..inf"}
 
 LINE_OFFSET = 6
 
