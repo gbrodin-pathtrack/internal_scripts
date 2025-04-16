@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("eh_drop_250312_dark.csv")
+df = pd.read_csv("eh_drop_250326_ambient.csv")
 
 df["normalDrop"] = (df["drop"] * df["battery"])/12
 
@@ -30,8 +30,8 @@ print("Average new solar no mitigation:",np.mean(df[(df["mitigation"] == False) 
 print("Average new solar w/ mitigation:",np.mean(df[(df["mitigation"] == True) & (df["solar"] == "New")]["normalDrop"]))
 print()
 
-# plt.boxplot([df[df["mitigation"] == False]["normalDrop"], df[df["mitigation"] == True]["normalDrop"]])
-# plt.xticks(ticks=[1,2],labels=["No","Yes"])
-# plt.xlabel("FW mitigation")
-# plt.ylabel("Normalised Battery Drop")
-# plt.show()
+plt.boxplot([df[df["mitigation"] == False]["normalDrop"], df[df["mitigation"] == True]["normalDrop"]])
+plt.xticks(ticks=[1,2],labels=["No","Yes"])
+plt.xlabel("FW mitigation")
+plt.ylabel("Normalised Battery Drop")
+plt.show()

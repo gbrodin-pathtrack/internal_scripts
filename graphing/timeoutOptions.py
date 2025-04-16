@@ -5,7 +5,7 @@ from os import listdir
 from os.path import isfile, join
 
 USE_PICKLE = True
-ZERO_SCALE = False
+ZERO_SCALE = True
 
 if USE_PICKLE:
     wantedExtension = ".pkl"
@@ -24,7 +24,7 @@ else:
 #convert datetime string to datetime
 obsDF["fixTime"] = pd.to_datetime(obsDF["fixTime"])
 
-timeoutOptions = np.arange(2,9,1)
+timeoutOptions = np.arange(2,16,1)
 timeoutDF = pd.DataFrame(timeoutOptions,columns=["timeout"])
 timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["TTF"] < x.timeout]["TTF"]) + x.timeout*len(obsDF.loc[obsDF["TTF"] >= x.timeout]), axis=1)
 timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF["TTF"] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)

@@ -82,7 +82,7 @@ obsDF["fixTime"] = pd.to_datetime(obsDF["fixTime"])
 schemeDFArr = []
 
 #calc on time and num successes for flat timeout options
-flatTimeouts = [8,6]
+flatTimeouts = [15,8]
 faltTimeDF = pd.DataFrame(flatTimeouts,columns=["timeout"])
 faltTimeDF["label"] = faltTimeDF["timeout"].astype(str) + "s flat"
 
@@ -92,7 +92,7 @@ schemeDFArr.append(faltTimeDF)
 
 
 #calc on time and num successes for adaptive timeout options
-adaptiveTimeouts = [[8,1,6]]
+adaptiveTimeouts = [[10,1,6],[8,1,6]]
 adaptTimeDF = pd.DataFrame(adaptiveTimeouts,columns=["timeout","step","min"])
 adaptTimeDF["label"] = adaptTimeDF["timeout"].astype(str) + "s - " + adaptTimeDF["step"].astype(str) + "s to " + adaptTimeDF["min"].astype(str) + "s"
 
@@ -105,7 +105,7 @@ schemeDFArr.append(adaptTimeDF)
 
 
 #calc on time and num successes for adaptive interval options
-adaptiveTimeoutIntervals = [[6,1,5]]
+adaptiveTimeoutIntervals = [[10,1,5]]
 adaptIntDF = pd.DataFrame(adaptiveTimeoutIntervals,columns=["timeout","skipStep","skipMax"])
 adaptIntDF["label"] = adaptIntDF["timeout"].astype(str) + "s skip " + adaptIntDF["skipStep"].astype(str) + " to " + adaptIntDF["skipMax"].astype(str)
 
@@ -118,7 +118,7 @@ schemeDFArr.append(adaptIntDF)
 
 
 #calc on time and num successes for adaptive timeout interval options
-adaptiveTimeoutIntervals = [[8,1,6,1,5]]
+adaptiveTimeoutIntervals = [[10,1,6,1,5]]
 adaptTimeIntDF = pd.DataFrame(adaptiveTimeoutIntervals,columns=["timeoutDef","timeoutStep","timeoutMin","skipStep","skipMax"])
 adaptTimeIntDF["label"] = adaptTimeIntDF["timeoutDef"].astype(str) + "s - " + adaptTimeIntDF["timeoutStep"].astype(str) + "s to " \
       + adaptTimeIntDF["timeoutMin"].astype(str) + "s skip " + adaptTimeIntDF["skipStep"].astype(str) + " to " + adaptTimeIntDF["skipMax"].astype(str)

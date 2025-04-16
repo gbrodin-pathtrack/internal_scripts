@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 USE_PICKLE = True
 
-DIV_TTF_10 = True
+DIV_TTF_10 = False
 
 def parseRawFile(fileName):
     with open(fileName, "r") as f:

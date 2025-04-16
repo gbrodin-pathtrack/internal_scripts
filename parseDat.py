@@ -50,7 +50,7 @@ def parseDatFile(fileName):
     print("Time reading and converting file",end-start)
 
     #empty dict for tag IDs
-    tags = {}
+    tags: dict[str, dict[str, list]] = {}
 
     start = time.time()
 
