@@ -5,6 +5,8 @@ from parsers.parsePackedTime import parsePackedTime
 #used to convert from range as stored in header
 ACCEL_SCALES = [2, 16, 4, 8]
 
+VEDBA = False
+
 def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     #take scale from common header
     accelScaleCode = (commonHeader[0] & 0x0C) >> 2
@@ -32,13 +34,31 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
         yArr = ((((upperY&0x7F) << 2) + ((lower&0x30)>>4) - ((upperY&0x80)<<2))*accelScale)/512
         zArr = ((((upperZ&0x7F) << 2) + ((lower&0x0C)>>2) - ((upperZ&0x80)<<2))*accelScale)/512
         magArr = np.sqrt(xArr**2 + yArr**2 + zArr**2)
-        accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
+        if VEDBA:
+            staticX = np.mean(xArr)
+            staticY = np.mean(yArr)
+            staticZ = np.mean(zArr)
+
+            dynXArr = xArr - staticX
+            dynYArr = yArr - staticY
+            dynZArr = zArr - staticZ
+
+            dynMagArr = np.sqrt(dynXArr**2 + dynYArr**2 + dynZArr**2)
+
+            accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag,"dynX":dynX,"dynY":dynY,"dynZ":dynZ,"dynMag":dynMag} \
+                           for x, y, z, mag, dynX, dynY, dynZ, dynMag in zip(xArr, yArr, zArr, magArr, dynXArr, dynYArr, dynZArr, dynMagArr)]
+            
+            summary = {"line":lineNum, "staticX":staticX, "staticY":staticY, "staticZ":staticZ, "dynMagSum":np.sum(dynMagArr), "dynMagAvg":int((sum(dynMagArr)+(len(xArr)/2))/len(xArr))}#np.mean(dynMagArr)
+        else:
+            accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
 
     timeStep = timedelta(microseconds=15625*(subsecondDuration/len(accelValues)))
     obsDatetime = startDateTime
     for obs in accelValues:
         obs["time"] = obsDatetime
         obsDatetime += timeStep
-
-    return {"Accel":accelValues}
+    if VEDBA:
+        return {"Accel":accelValues,"AccelSummary":[summary]}
+    else:
+        return {"Accel":accelValues}
     

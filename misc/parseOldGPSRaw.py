@@ -25,6 +25,7 @@ def parseRawFile(fileName):
         obs["fixTime"] = time
         obs["vbatt"] = float(line[3])
         obs["TTF"] = int(line[4]) / (10 if DIV_TTF_10 else 1)
+        obs["startTime"] = obs["fixTime"] - timedelta(seconds=obs["TTF"])
         numSV = int(line[5])
         obs["numSV"] = numSV
         obs["numGPS"] = numSV
