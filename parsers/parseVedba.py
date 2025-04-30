@@ -9,7 +9,7 @@ ACCEL_SCALES = [2, 16, 4, 8]
 def parseVeDBALine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     startDateTime = parsePackedTime(data[:5])
     scaleDuration = parseUInt32(data[5:9])
-    clippedPortion = data[9] #scale TBD, unused for now
+    percentClipped = data[9] #scale TBD, unused for now
 
     accelScaleCode = (scaleDuration & 0xC0000000) >> 30
     accelScale = ACCEL_SCALES[accelScaleCode]
@@ -18,7 +18,7 @@ def parseVeDBALine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
 
     vedbaArr = (data[10:]*accelScale)/128
 
-    vedbaValues = [{"line":lineNum,"time":0,"avgVeDBA":vedba} for vedba in vedbaArr]
+    vedbaValues = [{"line":lineNum,"time":0,"avgVeDBA":vedba,"percentClipped":percentClipped} for vedba in vedbaArr]
 
     timeStep = timedelta(microseconds=15625*(subsecondDuration/(len(vedbaValues)-1)))
     obsDatetime = startDateTime
