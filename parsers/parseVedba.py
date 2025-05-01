@@ -20,7 +20,10 @@ def parseVeDBALine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
 
     vedbaValues = [{"line":lineNum,"time":0,"avgVeDBA":vedba,"percentClipped":percentClipped} for vedba in vedbaArr]
 
-    timeStep = timedelta(microseconds=15625*(subsecondDuration/(len(vedbaValues)-1)))
+    if len(vedbaValues) < 2:
+        timeStep = timedelta(microseconds=0)
+    else:
+        timeStep = timedelta(microseconds=15625*(subsecondDuration/(len(vedbaValues)-1)))
     obsDatetime = startDateTime
     for obs in vedbaValues:
         obs["time"] = obsDatetime
