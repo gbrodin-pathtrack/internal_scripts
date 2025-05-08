@@ -48,7 +48,7 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
             accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag,"dynX":dynX,"dynY":dynY,"dynZ":dynZ,"dynMag":dynMag} \
                            for x, y, z, mag, dynX, dynY, dynZ, dynMag in zip(xArr, yArr, zArr, magArr, dynXArr, dynYArr, dynZArr, dynMagArr)]
             
-            summary = {"line":lineNum, "staticX":staticX, "staticY":staticY, "staticZ":staticZ, "dynMagSum":np.sum(dynMagArr), "dynMagAvg":int((sum(dynMagArr)+(len(xArr)/2))/len(xArr))}#np.mean(dynMagArr)
+            summary = {"line":lineNum, "staticX":staticX, "staticY":staticY, "staticZ":staticZ, "dynMagSum":np.sum(dynMagArr), "dynMagAvg":np.mean(dynMagArr)}
         else:
             accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
 
