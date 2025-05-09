@@ -5,7 +5,7 @@ from parsers.parsePackedTime import parsePackedTime
 #used to convert from range as stored in header
 ACCEL_SCALES = [2, 16, 4, 8]
 
-VEDBA = False
+POST_CALCS = False
 
 def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     #take scale from common header
@@ -25,6 +25,11 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
         upper = data[8::2]
         magArr = (((lower>>2) + (upper<<6))*accelScale)/8192
         accelValues = [{"line":lineNum,"time":0,"mag":mag} for mag in magArr]
+
+        if POST_CALCS:
+            interestingPoints = (magArr > 1.125).sum() + (magArr < 0.875).sum()
+
+            summary = {"line":lineNum, "interestingPoints":interestingPoints}
     else:
         upperX = data[7::4]
         upperY = data[8::4]
@@ -34,7 +39,7 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
         yArr = ((((upperY&0x7F) << 2) + ((lower&0x30)>>4) - ((upperY&0x80)<<2))*accelScale)/512
         zArr = ((((upperZ&0x7F) << 2) + ((lower&0x0C)>>2) - ((upperZ&0x80)<<2))*accelScale)/512
         magArr = np.sqrt(xArr**2 + yArr**2 + zArr**2)
-        if VEDBA:
+        if POST_CALCS:
             staticX = np.mean(xArr)
             staticY = np.mean(yArr)
             staticZ = np.mean(zArr)
@@ -45,10 +50,13 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
 
             dynMagArr = np.sqrt(dynXArr**2 + dynYArr**2 + dynZArr**2)
 
+            interestingPoints = (magArr > 1.125).sum() + (magArr < 0.875).sum()
+
             accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag,"dynX":dynX,"dynY":dynY,"dynZ":dynZ,"dynMag":dynMag} \
                            for x, y, z, mag, dynX, dynY, dynZ, dynMag in zip(xArr, yArr, zArr, magArr, dynXArr, dynYArr, dynZArr, dynMagArr)]
             
-            summary = {"line":lineNum, "staticX":staticX, "staticY":staticY, "staticZ":staticZ, "dynMagSum":np.sum(dynMagArr), "dynMagAvg":np.mean(dynMagArr)}
+            summary = {"line":lineNum, "staticX":staticX, "staticY":staticY, "staticZ":staticZ, \
+                       "dynMagSum":np.sum(dynMagArr), "dynMagAvg":np.mean(dynMagArr), "interestingPoints":interestingPoints}
         else:
             accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
 
@@ -57,7 +65,7 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
     for obs in accelValues:
         obs["time"] = obsDatetime
         obsDatetime += timeStep
-    if VEDBA:
+    if POST_CALCS:
         return {"Accel":accelValues,"AccelSummary":[summary]}
     else:
         return {"Accel":accelValues}
