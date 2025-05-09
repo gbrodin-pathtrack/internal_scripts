@@ -7,6 +7,8 @@ ACCEL_SCALES = [2, 16, 4, 8]
 
 POST_CALCS = False
 
+INTERESTING_G_OFFSET = 0.125
+
 def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
     #take scale from common header
     accelScaleCode = (commonHeader[0] & 0x0C) >> 2
@@ -27,7 +29,7 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
         accelValues = [{"line":lineNum,"time":0,"mag":mag} for mag in magArr]
 
         if POST_CALCS:
-            interestingPoints = (magArr > 1.125).sum() + (magArr < 0.875).sum()
+            interestingPoints = (magArr > (1 + INTERESTING_G_OFFSET)).sum() + (magArr < (1 - INTERESTING_G_OFFSET)).sum()
 
             summary = {"line":lineNum, "interestingPoints":interestingPoints}
     else:
@@ -50,7 +52,7 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
 
             dynMagArr = np.sqrt(dynXArr**2 + dynYArr**2 + dynZArr**2)
 
-            interestingPoints = (magArr > 1.125).sum() + (magArr < 0.875).sum()
+            interestingPoints = (magArr > (1 + INTERESTING_G_OFFSET)).sum() + (magArr < (1 - INTERESTING_G_OFFSET)).sum()
 
             accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag,"dynX":dynX,"dynY":dynY,"dynZ":dynZ,"dynMag":dynMag} \
                            for x, y, z, mag, dynX, dynY, dynZ, dynMag in zip(xArr, yArr, zArr, magArr, dynXArr, dynYArr, dynZArr, dynMagArr)]
