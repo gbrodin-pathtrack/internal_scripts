@@ -51,7 +51,7 @@ def parseObs(data : np.ndarray, obs : dict) -> int:
         obs["vbatt"] = data[6]
     else:
         obs["type"] = "Invalid"
-        print("Obs with type 0x11 set")
+        raise ValueError("Obs with type 0xC0 set")
 
     return 7
 
