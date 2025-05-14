@@ -10,7 +10,6 @@ from parsers.parsePressSingle import parsePressSingleLine
 from parsers.parseAccel import parseAccelLine
 from parsers.parseImmersionAccel import parseImmersionAccelLine
 from parsers.parseEHSolar import parseEHSolarLine
-from parsers.parseNavGPSTemp import parseNavGPSTempLine
 from parsers.parseNavGPS import parseNavGPSLine
 from parsers.parsePressureImmersion import parsePressureImmersionLine
 from parsers.parseVedba import parseVeDBALine
