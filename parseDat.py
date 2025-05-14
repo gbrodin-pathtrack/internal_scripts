@@ -14,6 +14,7 @@ from parsers.parseNavGPSTemp import parseNavGPSTempLine
 from parsers.parseNavGPS import parseNavGPSLine
 from parsers.parsePressureImmersion import parsePressureImmersionLine
 from parsers.parseVedba import parseVeDBALine
+from parsers.parsePressureSingleSemi import parsePressSingleSemiLine
 
 USE_PICKLE = False
 
@@ -30,6 +31,7 @@ HEADERS = {0x90:parseGPSLine,
            0xAE:parseAccelLine,
            0xB2:parsePressureImmersionLine,
            0xC0:parsePressSingleLine,
+           0xC2:parsePressSingleSemiLine,
            0xD2:parseImmersionAccelLine,
            0xDA:parseVeDBALine,
            0xE0:parseEHSolarLine
