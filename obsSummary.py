@@ -18,7 +18,7 @@ def processObsFile(fileName):
     else:
         obsDF = pd.read_csv(fileName)
     #convert datetime string to datetime
-    obsDF["fixTime"] = pd.to_datetime(obsDF["fixTime"])
+    obsDF["time"] = pd.to_datetime(obsDF["time"])
     obsDF["startTime"] = pd.to_datetime(obsDF["startTime"])
 
     print("-"*50)
@@ -92,7 +92,7 @@ def processObsFile(fileName):
         print("Timing stats:")
         print("-"*50)
 
-        #obsDF["startTime"] = obsDF["fixTime"] - pd.to_timedelta(obsDF["TTF"],unit="s")
+        #obsDF["startTime"] = obsDF["time"] - pd.to_timedelta(obsDF["TTF"],unit="s")
         obsDF["startTimeDiff"] = obsDF["startTime"].diff(1).dt.total_seconds()
         obsDF["startTimeDiffDiff"] = obsDF["startTimeDiff"].diff(1)
 

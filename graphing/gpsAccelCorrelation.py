@@ -24,7 +24,7 @@ if USE_PICKLE:
 else:
     obsDF = pd.read_csv(gpsFileName)
 #convert datetime string to datetime
-obsDF["fixTime"] = pd.to_datetime(obsDF["fixTime"])
+obsDF["time"] = pd.to_datetime(obsDF["time"])
 
 accelWantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_Accel"+wantedExtension)]
 accelFileName = accelWantedFiles[0]
@@ -45,7 +45,7 @@ accelBurstDF = pd.DataFrame({
     "activePortion":accelBursts.apply(lambda burst: len(burst[(burst["mag"] < 0.8) | (burst["mag"] > 1.2)])*100/len(burst))
 })
 
-obsDF["burstID"] = obsDF.apply(lambda obs: accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["time"] - obs.fixTime < np.timedelta64(180))].tail(1).index[0], axis=1)
+obsDF["burstID"] = obsDF.apply(lambda obs: accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["time"] - obs.time < np.timedelta64(180))].tail(1).index[0], axis=1)
 
 if SPLIT_PREV_FAIL:
     obsDF["prevSuccess"] = (obsDF["numSV"].shift(1) > 4) # | (obsDF["numSV"].shift(2) > 4)

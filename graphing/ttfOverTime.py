@@ -21,11 +21,11 @@ if USE_PICKLE:
 else:
     obsDF = pd.read_csv(fileName)
 #convert datetime string to datetime
-obsDF["fixTime"] = pd.to_datetime(obsDF["fixTime"])
+obsDF["time"] = pd.to_datetime(obsDF["time"])
 
 plt.title("TTF stats over time")
 plt.xlabel("Time")
 plt.ylabel("TTF")
-plt.plot(obsDF.fixTime, obsDF.TTF)
+plt.plot(obsDF.time, obsDF.TTF)
 
 plt.show()

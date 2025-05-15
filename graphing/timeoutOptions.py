@@ -22,7 +22,7 @@ if USE_PICKLE:
 else:
     obsDF = pd.read_csv(fileName)
 #convert datetime string to datetime
-obsDF["fixTime"] = pd.to_datetime(obsDF["fixTime"])
+obsDF["time"] = pd.to_datetime(obsDF["time"])
 
 timeoutOptions = np.arange(2,16,1)
 timeoutDF = pd.DataFrame(timeoutOptions,columns=["timeout"])

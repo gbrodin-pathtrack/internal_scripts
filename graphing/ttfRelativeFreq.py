@@ -21,7 +21,7 @@ if USE_PICKLE:
 else:
     fullDF = pd.read_csv(fileName)
 #convert datetime string to datetime
-fullDF["fixTime"] = pd.to_datetime(fullDF["fixTime"])
+fullDF["time"] = pd.to_datetime(fullDF["time"])
 
 #create new dataframe from rows with satelite ID of 0, these are dummy rows with only obs info attached
 obsDF = pd.DataFrame(fullDF.loc[fullDF["ID"] == 0]).reset_index(drop=True)

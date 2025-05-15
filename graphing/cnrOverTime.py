@@ -21,9 +21,9 @@ if USE_PICKLE:
 else:
     svDF = pd.read_csv(fileName)
 #convert datetime string to datetime
-svDF["fixTime"] = pd.to_datetime(svDF["fixTime"])
+svDF["time"] = pd.to_datetime(svDF["time"])
 
-aggregated = svDF.groupby("obsNum").agg(datetime = ("fixTime","first"),max_cnr=("CNR","max"),min_cnr=("CNR","min"),avg_cnr=("CNR","mean"))
+aggregated = svDF.groupby("obsNum").agg(datetime = ("time","first"),max_cnr=("CNR","max"),min_cnr=("CNR","min"),avg_cnr=("CNR","mean"))
 plt.title("CNR stats over time")
 plt.xlabel("Time")
 plt.ylabel("CNR")
