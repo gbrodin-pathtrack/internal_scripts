@@ -63,4 +63,4 @@ def parseNavGPSLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int)
         index += parseObs(data[index:], obs)
         outputArr.append(obs)
 
-    return{"GPS_NAV":outputArr}
+    return{"GPS_Nav":outputArr}

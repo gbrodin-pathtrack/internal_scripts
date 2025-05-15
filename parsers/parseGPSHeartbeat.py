@@ -107,8 +107,10 @@ def parseObs(data : np.ndarray, output : dict[str, list], lineNum) -> int:
             obs["HBType"] = "Unknown (%d)" % numSVs
         size += 1 + data[6]
 
-    if obsType < OBS_TYPE_HB1:
+    if obsType <= OBS_TYPE_MEASX_TR:
         output["GPS_Obs"].append(obs)
+    elif obsType <= OBS_TYPE_NAV:
+        output["GPS_Nav"].append(obs)
     else:
         obs["HBData"] = " ".join(np.char.mod('%d', data[6:size]))
         output["Heartbeat"].append(obs)
@@ -119,7 +121,7 @@ def parseObs(data : np.ndarray, output : dict[str, list], lineNum) -> int:
     return size
 
 def parseGPSHeartbeatLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
-    output = {"GPS_Obs":[],"GPS_SVs":[],"Heartbeat":[]}
+    output = {"GPS_Obs":[],"GPS_SVs":[],"GPS_Nav":[],"Heartbeat":[]}
     index = 0
     while index < len(data):
         index += parseObs(data[index:], output, lineNum)
