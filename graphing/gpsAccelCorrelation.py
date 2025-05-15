@@ -24,7 +24,7 @@ if USE_PICKLE:
 else:
     obsDF = pd.read_csv(gpsFileName)
 #convert datetime string to datetime
-obsDF["time"] = pd.to_datetime(obsDF["time"])
+obsDF["datetime"] = pd.to_datetime(obsDF["datetime"])
 
 accelWantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_Accel"+wantedExtension)]
 accelFileName = accelWantedFiles[0]
@@ -34,18 +34,18 @@ if USE_PICKLE:
 else:
     accelDF = pd.read_csv(accelFileName)
 
-accelDF["burst"] = accelDF["time"].diff().dt.seconds.gt(180).cumsum()
+accelDF["burst"] = accelDF["datetime"].diff().dt.seconds.gt(180).cumsum()
 
 accelBursts = accelDF.groupby("burst")
 
 accelBurstDF = pd.DataFrame({
     "tagID":accelBursts["tagID"].first(),
-    "time":accelBursts["time"].first(),
+    "datetime":accelBursts["datetime"].first(),
     "avgMag":accelBursts["mag"].mean(),
     "activePortion":accelBursts.apply(lambda burst: len(burst[(burst["mag"] < 0.8) | (burst["mag"] > 1.2)])*100/len(burst))
 })
 
-obsDF["burstID"] = obsDF.apply(lambda obs: accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["time"] - obs.time < np.timedelta64(180))].tail(1).index[0], axis=1)
+obsDF["burstID"] = obsDF.apply(lambda obs: accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["datetime"] - obs.time < np.timedelta64(180))].tail(1).index[0], axis=1)
 
 if SPLIT_PREV_FAIL:
     obsDF["prevSuccess"] = (obsDF["numSV"].shift(1) > 4) # | (obsDF["numSV"].shift(2) > 4)

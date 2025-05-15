@@ -18,8 +18,8 @@ def processObsFile(fileName):
     else:
         obsDF = pd.read_csv(fileName)
     #convert datetime string to datetime
-    obsDF["time"] = pd.to_datetime(obsDF["time"])
-    obsDF["startTime"] = pd.to_datetime(obsDF["startTime"])
+    obsDF["datetime"] = pd.to_datetime(obsDF["datetime"])
+    obsDF["startDatetime"] = pd.to_datetime(obsDF["startDatetime"])
 
     print("-"*50)
     print("Cumulative stats:")
@@ -92,26 +92,26 @@ def processObsFile(fileName):
         print("Timing stats:")
         print("-"*50)
 
-        #obsDF["startTime"] = obsDF["time"] - pd.to_timedelta(obsDF["TTF"],unit="s")
-        obsDF["startTimeDiff"] = obsDF["startTime"].diff(1).dt.total_seconds()
-        obsDF["startTimeDiffDiff"] = obsDF["startTimeDiff"].diff(1)
+        #obsDF["startDatetime"] = obsDF["datetime"] - pd.to_timedelta(obsDF["TTF"],unit="s")
+        obsDF["startDatetimeDiff"] = obsDF["startDatetime"].diff(1).dt.total_seconds()
+        obsDF["startDatetimeDiffDiff"] = obsDF["startDatetimeDiff"].diff(1)
 
         print("Time between GPS attempt starts:")
-        print(" - Average: %.2fs" % (np.mean(obsDF["startTimeDiff"])))
-        print(" - Maximum: %.2fs" % obsDF["startTimeDiff"].max())
-        print(" - Minimum: %.2fs" % obsDF["startTimeDiff"].min())
+        print(" - Average: %.2fs" % (np.mean(obsDF["startDatetimeDiff"])))
+        print(" - Maximum: %.2fs" % obsDF["startDatetimeDiff"].max())
+        print(" - Minimum: %.2fs" % obsDF["startDatetimeDiff"].min())
         print()
         #Comment in to see obs with max and min time diff
-        # print(obsDF.iloc[obsDF["startTimeDiff"].idxmax()-4 : obsDF["startTimeDiff"].idxmax()+3])
+        # print(obsDF.iloc[obsDF["startDatetimeDiff"].idxmax()-4 : obsDF["startDatetimeDiff"].idxmax()+3])
         # print()
-        # print(obsDF.iloc[obsDF["startTimeDiff"].idxmin()-4 : obsDF["startTimeDiff"].idxmin()+3])
+        # print(obsDF.iloc[obsDF["startDatetimeDiff"].idxmin()-4 : obsDF["startDatetimeDiff"].idxmin()+3])
         # print()
         # print()
-        # print(obsDF[obsDF["startTimeDiffDiff"].abs() > 5])
+        # print(obsDF[obsDF["startDatetimeDiffDiff"].abs() > 5])
         # print()
         # print(obsDF.to_string())
 
-        clockResets = obsDF.loc[obsDF["startTimeDiff"] < 0]
+        clockResets = obsDF.loc[obsDF["startDatetimeDiff"] < 0]
         if(len(clockResets)>0 and fileName.startswith("Obs")):
             print()
             print("WARNING: Negative time diff(s):")

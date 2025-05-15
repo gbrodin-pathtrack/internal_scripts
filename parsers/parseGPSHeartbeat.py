@@ -42,7 +42,7 @@ def parseMEASXObs(data : np.ndarray, obs : dict, satArr : list[dict]):
 def parseNAVObs(data : np.ndarray, obs : dict):
     nanos = parseInt32(data[:4])
     timediff = timedelta(microseconds=nanos/1000)
-    obs["time"] += timediff
+    obs["datetime"] += timediff
     obs["lat"] = parseInt32(data[4:8]) * 1e-7
     obs["long"] = parseInt32(data[8:12]) * 1e-7
     obs["elipsoidHeight"] = parseInt32(data[12:16]) / 1000
@@ -67,7 +67,7 @@ def parseObs(data : np.ndarray, output : dict[str, list], lineNum) -> int:
     obsType = (data[5] & 0xE0) >> 5
     numSVs = data[5] & 0x1F
 
-    obs = {"line":lineNum,"time":time,"type":OBS_STR[obsType]}
+    obs = {"line":lineNum,"datetime":time,"type":OBS_STR[obsType]}
 
     size = 6
 
@@ -78,7 +78,7 @@ def parseObs(data : np.ndarray, output : dict[str, list], lineNum) -> int:
         if obsType != OBS_TYPE_MEASX_F:
             obs["vbatt"] = data[6]
             obs["TTF"] = data[7]/10
-            obs["startTime"] = obs["time"] - timedelta(seconds=obs["TTF"])
+            obs["startDatetime"] = obs["datetime"] - timedelta(seconds=obs["TTF"])
             size += 2
         parseMEASXObs(data[size:size+5*numSVs], obs, satArr)
         size += 5*numSVs

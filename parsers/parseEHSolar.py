@@ -12,12 +12,12 @@ def parseEHSolarLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int
     vocArr = (data[7::3]) * 0.01
     harvArr = data[8::3] + (data[9::3] << 8)
 
-    solarValues = [{"line":lineNum,"time":0,"VOC":voc, "harvCount":harv} for voc, harv in zip(vocArr, harvArr)]
+    solarValues = [{"line":lineNum,"datetime":0,"VOC":voc, "harvCount":harv} for voc, harv in zip(vocArr, harvArr)]
 
     timeStep = timedelta(seconds=interval)
     obsDatetime = startDateTime
     for obs in solarValues:
-        obs["time"] = obsDatetime
+        obs["datetime"] = obsDatetime
         obsDatetime += timeStep
 
     return {"EHSolar":solarValues}

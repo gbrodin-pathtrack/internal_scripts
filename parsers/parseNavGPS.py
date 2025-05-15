@@ -14,7 +14,7 @@ def parseMEASXObs(data : np.ndarray, obs : dict):
 def parseNAVObs(data : np.ndarray, obs : dict):
     nanos = parseInt32(data[:4])
     timediff = timedelta(microseconds=nanos/1000)
-    obs["time"] += timediff
+    obs["datetime"] += timediff
     obs["lat"] = parseInt32(data[4:8]) * 1e-7
     obs["long"] = parseInt32(data[8:12]) * 1e-7
     obs["elipsoidHeight"] = parseInt32(data[12:16]) / 1000
@@ -34,7 +34,7 @@ def parseObs(data : np.ndarray, obs : dict) -> int:
     #parse common data and create obs
     time = parsePackedTime(data[:5])
     numSVs = data[5] & 0x3F
-    obs.update({"time":time,"type":0,"numSV":numSVs})
+    obs.update({"datetime":time,"type":0,"numSV":numSVs})
 
     #check data type and pass to relevant parser
     obsType = data[5] & 0xC0

@@ -131,10 +131,13 @@ def parseDatFile(fileName):
                 continue
 
             df = pd.DataFrame(obsArr)
-            #df.to_csv(fileName[:-4]+tagIDfileStr+"_"+dataType+".csv",index=False)
             if USE_PICKLE:
                 df.to_pickle(fileName[:-4]+tagIDfileStr+"_"+dataType+".pkl")
             else:
+                if "datetime" in df.columns:
+                    df.insert(loc=df.columns.get_loc("datetime")+1,column="time",value=df["datetime"].dt.round("1s"))
+                    df["time"] = df["time"].dt.time
+                    df.insert(loc=df.columns.get_loc("datetime")+1,column="date",value=df["datetime"].dt.date)
                 df.to_csv(fileName[:-4]+tagIDfileStr+"_"+dataType+".csv",index=False)
 
     end = time.time()

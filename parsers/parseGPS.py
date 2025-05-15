@@ -8,7 +8,7 @@ def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list) -> 
     vbatt = data[6]
     ttf = data[7]/10
     startTime = fixTime - datetime.timedelta(seconds=ttf)
-    obs = {"line":lineNum,"time":fixTime,"numSV":numSV,"vbatt":vbatt,"TTF":ttf,"startTime":startTime}
+    obs = {"line":lineNum,"datetime":fixTime,"numSV":numSV,"vbatt":vbatt,"TTF":ttf,"startDatetime":startTime}
     obsArr.append(obs)
 
     end = 8 + numSV*5

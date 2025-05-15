@@ -26,9 +26,9 @@ for fileName in wantedFiles:
     df["smoothed_mag"] = df["mag"].rolling(window=100, min_periods=0, center=True).mean()
 
     if SMOOTHED:
-        plt.plot(df.time, df.smoothed_mag, label=tagID)
+        plt.plot(df.datetime, df.smoothed_mag, label=tagID)
     else:
-        plt.plot(df.time, df.mag, label=tagID)
+        plt.plot(df.datetime, df.mag, label=tagID)
 
 plt.title("Acceleration Over Time")
 plt.ylabel("Accel Magnitude (g)")

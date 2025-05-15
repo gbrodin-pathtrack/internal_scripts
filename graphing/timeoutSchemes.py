@@ -77,7 +77,7 @@ if USE_PICKLE:
 else:
     obsDF = pd.read_csv(fileName)
 #convert datetime string to datetime
-obsDF["time"] = pd.to_datetime(obsDF["time"])
+obsDF["datetime"] = pd.to_datetime(obsDF["datetime"])
 
 schemeDFArr = []
 

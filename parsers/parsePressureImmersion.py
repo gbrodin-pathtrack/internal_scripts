@@ -20,14 +20,14 @@ def parsePressureImmersionLine(data : np.ndarray, commonHeader : np.ndarray, lin
     immersionArr = (upperArr&0x80).astype(bool)
     pressArr = np.vectorize(parsePressure)(((upperArr&0x7F)<<8) + lowerArr)
 
-    outputArr = [{"line":lineNum,"time":0,"pressure":press,"immersed":immersion} for press, immersion in zip(pressArr, immersionArr)]
+    outputArr = [{"line":lineNum,"datetime":0,"pressure":press,"immersed":immersion} for press, immersion in zip(pressArr, immersionArr)]
 
     outputArr[0]["temp"] = temp
 
     timeStep = timedelta(seconds=interval)
     obsDatetime = startDateTime
     for obs in outputArr:
-        obs["time"] = obsDatetime
+        obs["datetime"] = obsDatetime
         obsDatetime += timeStep
 
     return {"Pressure_Immersion":outputArr}

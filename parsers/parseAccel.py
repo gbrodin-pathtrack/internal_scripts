@@ -26,7 +26,7 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
         lower = data[7::2]
         upper = data[8::2]
         magArr = (((lower>>2) + (upper<<6))*accelScale)/8192
-        accelValues = [{"line":lineNum,"time":0,"mag":mag} for mag in magArr]
+        accelValues = [{"line":lineNum,"datetime":0,"mag":mag} for mag in magArr]
 
         if POST_CALCS:
             interestingPoints = (magArr > (1 + INTERESTING_G_OFFSET)).sum() + (magArr < (1 - INTERESTING_G_OFFSET)).sum()
@@ -54,18 +54,18 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
 
             interestingPoints = (magArr > (1 + INTERESTING_G_OFFSET)).sum() + (magArr < (1 - INTERESTING_G_OFFSET)).sum()
 
-            accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag,"dynX":dynX,"dynY":dynY,"dynZ":dynZ,"dynMag":dynMag} \
+            accelValues = [{"line":lineNum,"datetime":0,"X":x,"Y":y,"Z":z,"mag":mag,"dynX":dynX,"dynY":dynY,"dynZ":dynZ,"dynMag":dynMag} \
                            for x, y, z, mag, dynX, dynY, dynZ, dynMag in zip(xArr, yArr, zArr, magArr, dynXArr, dynYArr, dynZArr, dynMagArr)]
             
-            summary = {"line":lineNum, "time":startDateTime, "staticX":staticX, "staticY":staticY, "staticZ":staticZ, \
+            summary = {"line":lineNum, "datetime":startDateTime, "staticX":staticX, "staticY":staticY, "staticZ":staticZ, \
                        "dynMagSum":np.sum(dynMagArr), "dynMagAvg":np.mean(dynMagArr), "interestingPoints":interestingPoints}
         else:
-            accelValues = [{"line":lineNum,"time":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
+            accelValues = [{"line":lineNum,"datetime":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
 
     timeStep = timedelta(microseconds=15625*(subsecondDuration/len(accelValues)))
     obsDatetime = startDateTime
     for obs in accelValues:
-        obs["time"] = obsDatetime
+        obs["datetime"] = obsDatetime
         obsDatetime += timeStep
     if POST_CALCS:
         return {"Accel":accelValues,"AccelSummary":[summary]}

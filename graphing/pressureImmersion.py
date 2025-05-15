@@ -21,7 +21,7 @@ for fileName in wantedFiles:
 
     tagID = fileName[-len("TagXXXXX_Pressure_Immersion.pkl"):-len("_Pressure_Immersion.pkl")]
 
-    plt.plot(df.time, df.pressure, label=tagID)
+    plt.plot(df.datetime, df.pressure, label=tagID)
 
 plt.title("Pressure Over Time")
 plt.ylabel("Pressure (mbar)")

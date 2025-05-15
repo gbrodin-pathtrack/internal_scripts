@@ -34,7 +34,7 @@ def parsePressSingleSemiLine(data : np.ndarray, commonHeader : np.ndarray, lineN
         obsTime = startTime + timedelta(seconds=blockTimeOffset)
         #loop data points in block
         while index < blockEnd:
-            obs = {"line":lineNum,"time":obsTime, "numReadings":numReadings}
+            obs = {"line":lineNum,"datetime":obsTime, "numReadings":numReadings}
             if highRes:
                 obs["press"] = parseUInt16(data[index:]) * 0.5
                 index += 2
