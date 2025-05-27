@@ -31,7 +31,7 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) 
         if POST_CALCS:
             interestingPoints = (magArr > (1 + INTERESTING_G_OFFSET)).sum() + (magArr < (1 - INTERESTING_G_OFFSET)).sum()
 
-            summary = {"line":lineNum, "interestingPoints":interestingPoints}
+            summary = {"line":lineNum, "datetime":startDateTime, "interestingPoints":interestingPoints}
     else:
         upperX = data[7::4]
         upperY = data[8::4]
