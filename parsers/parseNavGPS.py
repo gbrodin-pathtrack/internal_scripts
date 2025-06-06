@@ -55,7 +55,10 @@ def parseObs(data : np.ndarray, obs : dict) -> int:
 
     return 7
 
-def parseNavGPSLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parseNavGPSLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+    if mixed:
+        raise ValueError("No mixed implementation for Nav GPS")
+
     outputArr = []
     index = 0
     while index < len(data):

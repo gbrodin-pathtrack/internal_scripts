@@ -9,7 +9,10 @@ POST_CALCS = False
 
 INTERESTING_G_OFFSET = 0.125
 
-def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+    if mixed:
+        raise ValueError("No mixed implementation for Accelerometer")
+
     #take scale from common header
     accelScaleCode = (commonHeader[0] & 0x0C) >> 2
     accelScale = ACCEL_SCALES[accelScaleCode]

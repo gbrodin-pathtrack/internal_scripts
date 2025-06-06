@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta
 import numpy as np
-from parsers.parsePackedTime import parsePackedTime, parsePackedTimeZeroSS
+from parsers.parsePackedTime import parsePackedTimeZeroSS
 
 #used to convert from range as stored in header
 ACCEL_SCALES = [2, 16, 4, 8]
 
-def parseImmersionAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parseImmersionAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+    if mixed:
+        raise ValueError("No mixed implementation for Immersion + Accelerometer")
+
     startDateTime = parsePackedTimeZeroSS(data[:5])
     
     accelScaleCode = (data[5] & 0x0C) >> 2

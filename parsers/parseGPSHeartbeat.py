@@ -120,7 +120,10 @@ def parseObs(data : np.ndarray, output : dict[str, list], lineNum) -> int:
 
     return size
 
-def parseGPSHeartbeatLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parseGPSHeartbeatLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+    if mixed:
+        raise ValueError("No mixed implementation for GPS + Heartbeat")
+
     output = {"GPS_Obs":[],"GPS_SVs":[],"GPS_Nav":[],"Heartbeat":[]}
     index = 0
     while index < len(data):

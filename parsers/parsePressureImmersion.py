@@ -9,7 +9,9 @@ def parsePressure(compressedPress):
         return 600 + (compressedPress/64)
 
 
-def parsePressureImmersionLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parsePressureImmersionLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+    #mixed and non mixed identical
+
     startDateTime = parsePackedTimeZeroSS(data[:5])
     temp = (data[5]/2) - 40
     interval = int(data[6])

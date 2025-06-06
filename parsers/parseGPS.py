@@ -25,7 +25,10 @@ def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list) -> 
     return end
 
 
-def parseGPSLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parseGPSLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+    if mixed:
+        raise ValueError("No mixed implementation for GPS")
+
     obsArr = []
     satArr = []
     index = 0

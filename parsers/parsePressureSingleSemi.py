@@ -7,7 +7,9 @@ from parsers.parseInt import parseUInt16
 #Data type x = (High res, temp)
 DATA_TYPES = [(True,True),(False,False),(False,True),(True,False)]
 
-def parsePressSingleSemiLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parsePressSingleSemiLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+    #mixed and non mixed identical
+
     startTime = parsePackedTimeZeroSS(data[:5])
     dataType = (data[5] & 0xF0) >> 4
     interval = int(data[5] & 0x0F)

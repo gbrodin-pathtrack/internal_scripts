@@ -15,6 +15,7 @@ from parsers.parsePressureImmersion import parsePressureImmersionLine
 from parsers.parseVedba import parseVeDBALine
 from parsers.parsePressureSingleSemi import parsePressSingleSemiLine
 from parsers.parseGPSHeartbeat import parseGPSHeartbeatLine
+from parsers.parseMixed import parseMixedLine
 
 USE_PICKLE = False
 
@@ -35,7 +36,8 @@ HEADERS = {0x90:parseGPSLine,
            0xC2:parsePressSingleSemiLine,
            0xD2:parseImmersionAccelLine,
            0xDA:parseVeDBALine,
-           0xE0:parseEHSolarLine
+           0xE0:parseEHSolarLine,
+           0xE4:parseMixedLine,
            }
 
 LINE_OFFSET = 6
@@ -102,7 +104,7 @@ def parseDatFile(fileName):
         
         #pass data, header and line num to handler function
         try:
-            parsedDataTypes = dataTypeHandler(data, commonHeader, lineNum)
+            parsedDataTypes = dataTypeHandler(data, commonHeader, lineNum, False)
         except ValueError as e:
             print("Skipping line",lineNum,"due to ValueError:")
             print(e)
@@ -125,8 +127,8 @@ def parseDatFile(fileName):
                 tagIDfileStr = "_"+tagID
 
             #dont make CSV for unknown data types
-            if dataType == "Unknown":
-                with open(fileName[:-4]+tagIDfileStr+"_Unknown.txt","w") as f:
+            if dataType == "Unknown" or dataType == "Unknown_M":
+                with open(fileName[:-4]+tagIDfileStr+"_"+dataType+".txt","w") as f:
                     f.write("\n".join([" ".join(["%02X" % byte for byte in line]) for line in obsArr]))
                 continue
 

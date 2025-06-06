@@ -13,7 +13,9 @@ def decode16BitPress(value, sensor):
         else:
             return value-55500
 
-def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+    #mixed and non mixed identical
+
     outputArr = []
 
     format = (data[0] & 0xF8) >> 3

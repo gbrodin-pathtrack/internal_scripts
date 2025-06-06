@@ -1,22 +1,34 @@
 from datetime import timedelta
 import numpy as np
 from parsers.parsePackedTime import parsePackedTime
-from parsers.parseInt import parseUInt32
+from parsers.parseInt import parseUInt32, parseUInt16
 
 #used to convert from range as stored in header
 ACCEL_SCALES = [2, 16, 4, 8]
 
-def parseVeDBALine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parseVeDBALine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
     startDateTime = parsePackedTime(data[:5])
-    scaleDuration = parseUInt32(data[5:9])
-    percentClipped = data[9] #scale TBD, unused for now
 
-    accelScaleCode = (scaleDuration & 0xC0000000) >> 30
+    if mixed:
+        subsecondDuration = parseUInt16(data[5:7])
+        percentClipped = data[7]
+
+        dataStart = 8
+
+        accelScaleCode = commonHeader[0] - 4
+    else:
+        scaleDuration = parseUInt32(data[5:9])
+        percentClipped = data[9] #scale TBD, unused for now
+
+        dataStart = 10
+
+        accelScaleCode = (scaleDuration & 0xC0000000) >> 30
+
+        subsecondDuration = scaleDuration & 0x3FFFFFFF
+
     accelScale = ACCEL_SCALES[accelScaleCode]
 
-    subsecondDuration = scaleDuration & 0x3FFFFFFF
-
-    vedbaArr = (data[10:]*accelScale)/128
+    vedbaArr = (data[dataStart:]*accelScale)/128
 
     vedbaValues = [{"line":lineNum,"datetime":0,"avgVeDBA":vedba,"percentClipped":percentClipped} for vedba in vedbaArr]
 

@@ -3,7 +3,10 @@ import numpy as np
 from parsers.parsePackedTime import parsePackedTime, parsePackedTimeZeroSS
 from parsers.parseInt import parseUInt16
 
-def parseEHSolarLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int) -> dict[str, list]:
+def parseEHSolarLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+    if mixed:
+        raise ValueError("No mixed implementation for EH Solar")
+
     #convert ptTimePacked to python datetime
     startDateTime = parsePackedTimeZeroSS(data[:5])
 
