@@ -22,6 +22,8 @@ USE_PICKLE = False
 #add headers here without the UHF bit set, UHF bit will be extracted and handled the same for all header types
 HEADERS = {0x90:parseGPSLine,
            0x92:parseGPSHeartbeatLine,
+           0x94:parseGPSLine,
+           0x96:parseGPSHeartbeatLine,
            0x98:parseNavGPSLine,
            0xA0:parseAccelLine,
            0xA2:parseAccelLine,
