@@ -8,8 +8,8 @@ OBS_TYPE_MEASX_TR   = 1
 OBS_TYPE_START      = 2
 OBS_TYPE_MEASX_F    = 3
 OBS_TYPE_NAV        = 4
-OBS_TYPE_HB1        = 5
-OBS_TYPE_HB2        = 6
+OBS_TYPE_NAV_SLIM   = 5
+OBS_TYPE_HB1        = 6
 OBS_TYPE_HBN        = 7
 
 OBS_STR = {OBS_TYPE_MEASX:"MEASX",
@@ -17,8 +17,8 @@ OBS_STR = {OBS_TYPE_MEASX:"MEASX",
            OBS_TYPE_START:"Start Indicator",
            OBS_TYPE_MEASX_F:"MEASX Fill",
            OBS_TYPE_NAV:"NAV",
-           OBS_TYPE_HB1:"Heartbeat(1)",
-           OBS_TYPE_HB2:"Heartbeat(2)",
+           OBS_TYPE_NAV_SLIM:"NAV Slim",
+           OBS_TYPE_HB1:"Heartbeat(2)",
            OBS_TYPE_HBN:"Heartbeat(n)"}
 
 HB1_STR = {0:"Battery Report",
@@ -57,6 +57,10 @@ def parseNAVObs(data : np.ndarray, obs : dict):
     obs["vel2D"] = np.sqrt(velN**2 + velE**2) / 1000
     obs["vel3D"] = np.sqrt(velN**2 + velE**2 + velD**2) / 1000
 
+def parseNAVSlimObs(data : np.ndarray, obs : dict):
+    obs["lat"] = parseInt32(data[:4]) * 1e-7
+    obs["long"] = parseInt32(data[4:8]) * 1e-7
+    obs["elipsoidHeight"] = parseInt32(data[8:12]) / 1000
 
 def parseObs(data : np.ndarray, output : dict[str, list], lineNum) -> int:
     #parse common data and create obs
@@ -88,18 +92,15 @@ def parseObs(data : np.ndarray, output : dict[str, list], lineNum) -> int:
     elif obsType == OBS_TYPE_NAV:
         parseNAVObs(data[6:40], obs)
         size += 34
+    elif obsType == OBS_TYPE_NAV_SLIM:
+        parseNAVSlimObs(data[6:40], obs)
+        size += 12
     elif obsType == OBS_TYPE_HB1:
         if numSVs in HB1_STR.keys():
             obs["HBType"] = HB1_STR[numSVs]
         else:
             obs["HBType"] = "Unknown (%d)" % numSVs
         size += 1
-    elif obsType == OBS_TYPE_HB2:
-        if numSVs in HB2_STR.keys():
-            obs["HBType"] = HB2_STR[numSVs]
-        else:
-            obs["HBType"] = "Unknown (%d)" % numSVs
-        size += 2
     elif obsType == OBS_TYPE_HBN:
         if numSVs in HBN_STR.keys():
             obs["HBType"] = HBN_STR[numSVs]

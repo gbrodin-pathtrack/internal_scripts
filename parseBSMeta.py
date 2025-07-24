@@ -20,6 +20,9 @@ def parseBSDat(fileName):
 
     metaArr = []
     for lineNum, line in enumerate(byteLines):
+        #skip old style lines or blank lines
+        if line[0] < 0x10 or line[0] == 0xFF:
+            continue
         signal = (line[2] & 0xE0) >> 5
         metaArr.append({"lineNum":lineNum + LINE_OFFSET,
                         "transmissionStart":bool(line[2] & 0x10),
