@@ -110,7 +110,7 @@ def parseObs(data : np.ndarray, output : dict[str, list], lineNum) -> int:
 
     if obsType <= OBS_TYPE_MEASX_TR:
         output["GPS_Obs"].append(obs)
-    elif obsType <= OBS_TYPE_NAV:
+    elif obsType <= OBS_TYPE_NAV_SLIM:
         output["GPS_Nav"].append(obs)
     else:
         obs["HBData"] = " ".join(np.char.mod('%d', data[6:size]))
