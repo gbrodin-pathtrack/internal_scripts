@@ -18,15 +18,15 @@ OBS_STR = {OBS_TYPE_MEASX:"MEASX",
            OBS_TYPE_MEASX_F:"MEASX Fill",
            OBS_TYPE_NAV:"NAV",
            OBS_TYPE_NAV_SLIM:"NAV Slim",
-           OBS_TYPE_HB1:"Heartbeat(2)",
+           OBS_TYPE_HB1:"Heartbeat(1)",
            OBS_TYPE_HBN:"Heartbeat(n)"}
 
 HB1_STR = {0:"Battery Report",
            1:"GPS UART Fail"}
 
-HB2_STR = {0:"Reset Report"}
+HB2_STR = {}
 
-HBN_STR = {}
+HBN_STR = {0:"Reset Report"}
 
 def parseMEASXObs(data : np.ndarray, obs : dict, satArr : list[dict]):
     index = 0
