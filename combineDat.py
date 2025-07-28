@@ -10,7 +10,7 @@ else:
     wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith(".dat") and "combined" not in f]
 
 skipLines = 0
-with open("combined.dat","w") as combinedFile:
+with open("Obs_combined.dat","w") as combinedFile:
     for file in wantedFiles:
         with open(file,'r') as datFile:
             combinedFile.writelines(datFile.readlines()[skipLines:])

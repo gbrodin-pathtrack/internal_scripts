@@ -64,8 +64,8 @@ def parseDatFile(fileName):
     start = time.time()
 
     for lineNum, line in enumerate(byteLines):
-        #skip old type lines
-        if line[0] < 0x10:
+        #skip old type lines and debug/blank lines
+        if line[0] < 0x10 or line[0] == 0xFF:
             continue
 
         #Add offset so line numbers match line numbers in dat file
