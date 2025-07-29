@@ -16,6 +16,8 @@ from parsers.parseVedba import parseVeDBALine
 from parsers.parsePressureSingleSemi import parsePressSingleSemiLine
 from parsers.parseGPSHeartbeat import parseGPSHeartbeatLine
 from parsers.parseMixed import parseMixedLine
+from parsers.parseMagnetometer_Temp import parseMagnetometerLine_Temp
+from parsers.parseDifferentialPressure import parseDifferentialPressureLine
 
 USE_PICKLE = False
 
@@ -34,9 +36,11 @@ HEADERS = {0x90:parseGPSLine,
            0xAC:parseAccelLine,
            0xAE:parseAccelLine,
            0xB2:parsePressureImmersionLine,
+           0xB4:parseDifferentialPressureLine,
            0xC0:parsePressSingleLine,
            0xC2:parsePressSingleSemiLine,
            0xD2:parseImmersionAccelLine,
+           0xD6:parseMagnetometerLine_Temp,
            0xDA:parseVeDBALine,
            0xE0:parseEHSolarLine,
            0xE4:parseMixedLine,
