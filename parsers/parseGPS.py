@@ -2,11 +2,13 @@ import datetime
 import numpy as np
 from parsers.parsePackedTime import parsePackedTime
 
+DIV_TTF = 10
+
 def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list) -> int:
     fixTime = parsePackedTime(data[:5])
     numSV = data[5]
     vbatt = data[6]
-    ttf = data[7]/10
+    ttf = data[7]/DIV_TTF
     startTime = fixTime - datetime.timedelta(seconds=ttf)
     obs = {"line":lineNum,"datetime":fixTime,"numSV":numSV,"vbatt":vbatt,"TTF":ttf,"startDatetime":startTime}
     obsArr.append(obs)
