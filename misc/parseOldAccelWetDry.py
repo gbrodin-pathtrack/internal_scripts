@@ -1,20 +1,21 @@
 from os import listdir
 from os.path import isfile, join
 import pandas as pd
-from datetime import datetime, timedelta
+import numpy as np
 
 USE_PICKLE = True
 
-def convertDatetime(x):
-    dt = datetime(year=int(x.year), month=1, day=1)
-    offset = timedelta(days=(int(x.day) - 1),seconds=int(x.second))
-    dt += offset
-    return pd.to_datetime(dt)
+def calcAngle(reading):
+    if reading.mag < 0.9 or reading.mag > 1.1:
+        return np.NaN
+    return np.degrees(np.arcsin(abs(reading.X)/reading.mag))
 
 def parseAccelFile(fileName):
     df = pd.read_csv(fileName,sep=' ',names=["year","month","day","hour","minute","second","X","Y","Z","mag","immersed"],header=None,skiprows=5)
 
     df["datetime"] = pd.to_datetime(df[["year","month","day","hour","minute","second"]])
+
+    df["angle"] = df.apply(lambda x: calcAngle(x), axis=1)
 
     df["tagID"] = int(fileName[-18:-13])
 

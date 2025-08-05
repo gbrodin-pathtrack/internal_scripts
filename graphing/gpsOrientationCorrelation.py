@@ -32,12 +32,12 @@ if USE_PICKLE:
 else:
     accelDF = pd.read_csv(accelFileName)
 
-def calcAngle(reading):
-    if reading.mag < 0.9 or reading.mag > 1.1:
-        return np.NaN
-    return np.degrees(np.arcsin(abs(reading.X)/reading.mag))
+# def calcAngle(reading):
+#     if reading.mag < 0.9 or reading.mag > 1.1:
+#         return np.NaN
+#     return np.degrees(np.arcsin(abs(reading.X)/reading.mag))
 
-accelDF["angle"] = accelDF.apply(lambda x: calcAngle(x), axis=1)
+# accelDF["angle"] = accelDF.apply(lambda x: calcAngle(x), axis=1)
 
 def getAngle(x):
     global accelDF
