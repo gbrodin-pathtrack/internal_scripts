@@ -8,7 +8,7 @@ USE_PICKLE = True
 def parseAccelFile(fileName):
     with open(fileName, "r") as f:
         lines = f.readlines()
-        lines = [line.split() for line in lines[5:]]
+        lines = [line.replace(',','.').split() for line in lines[5:]]
 
     tagID = int(fileName[-14:-9])
     
@@ -18,7 +18,7 @@ def parseAccelFile(fileName):
         seconds, fracSeconds = divmod(float(line[5]),1)
         time = datetime(year=int(line[0]),month=int(line[1]), day=int(line[2]), hour=int(line[3]), minute=int(line[4]), second=int(seconds), microsecond=int(fracSeconds*1000000))
         obs["tagID"] = tagID
-        obs["time"] = time
+        obs["datetime"] = time
         obs["X"] = float(line[6])
         obs["Y"] = float(line[7])
         obs["Z"] = float(line[8])

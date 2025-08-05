@@ -36,7 +36,7 @@ def parseDifferentialPressureLine(data : np.ndarray, commonHeader : np.ndarray, 
             #shift difference down and convert sign bit
             diffByte = data[index] >> 1
             diff = (diffByte & 0x3F) - (diffByte & 0x40)
-            #add difference to reference before scale conversion (safe as differential readings will never cross between the split scales)
+            #add difference to reference then convert and store to output
             ref += diff
             pressArr.append(parsePressure(ref))
             refArr.append(False)

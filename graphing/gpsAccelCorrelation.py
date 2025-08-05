@@ -7,7 +7,7 @@ from os.path import isfile, join
 
 USE_PICKLE = True
 
-SPLIT_PREV_FAIL = True
+SPLIT_PREV_FAIL = False
 
 if USE_PICKLE:
     wantedExtension = ".pkl"
@@ -45,7 +45,7 @@ accelBurstDF = pd.DataFrame({
     "activePortion":accelBursts.apply(lambda burst: len(burst[(burst["mag"] < 0.8) | (burst["mag"] > 1.2)])*100/len(burst))
 })
 
-obsDF["burstID"] = obsDF.apply(lambda obs: accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["datetime"] - obs.time < np.timedelta64(180))].tail(1).index[0], axis=1)
+obsDF["burstID"] = obsDF.apply(lambda obs: accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["datetime"] - obs.datetime < np.timedelta64(180))].tail(1).index[0], axis=1)
 
 if SPLIT_PREV_FAIL:
     obsDF["prevSuccess"] = (obsDF["numSV"].shift(1) > 4) # | (obsDF["numSV"].shift(2) > 4)
@@ -79,11 +79,12 @@ else:
     x = accelBurstDF.iloc[obsDF.burstID].activePortion
     y = obsDF.numSV
 
-    plt.scatter(x, y, marker='.', linewidth=0, alpha=0.1)
+    plt.scatter(x, y, marker='o', linewidth=0, alpha=0.5)
     plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)),color="black",linestyle=(0,(5,7)),linewidth=1)
     plt.xlabel("Percentage of 'active' points (%)")
     plt.ylabel("Num SVs")
     plt.title("Accelerometer activity to GPS performance")
 
+    plt.tight_layout()
     plt.show()
 
