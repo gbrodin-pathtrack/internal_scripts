@@ -7,6 +7,8 @@ from os.path import isfile, join
 
 USE_PICKLE = True
 
+PLOT_PER_TAG = True
+
 if USE_PICKLE:
     wantedExtension = ".pkl"
 else:
@@ -49,11 +51,21 @@ obsDF["angle"] = obsDF.apply(lambda x: getAngle(x), axis=1)
 
 obsDF.dropna(subset=["angle"],inplace=True)
 
-x = obsDF.angle
-y = obsDF.numSV
+if PLOT_PER_TAG:
+    for tagID in obsDF["tagID"].unique():
+        x = obsDF[obsDF["tagID"] == tagID].angle
+        y = obsDF[obsDF["tagID"] == tagID].numSV
 
-plt.scatter(x, y, marker='o', linewidth=0, alpha=0.5)
-plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)),color="black",linestyle=(0,(5,7)),linewidth=1)
+        plt.scatter(x, y, marker='o', linewidth=0, alpha=0.5, label=str(tagID))
+
+    plt.legend(loc="best")
+else:
+    x = obsDF.angle
+    y = obsDF.numSV
+
+    plt.scatter(x, y, marker='o', linewidth=0, alpha=0.5)
+    plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)),color="black",linestyle=(0,(5,7)),linewidth=1)
+
 plt.xlabel("Angle between antenna and surface of earth (degrees)")
 plt.ylabel("Num SVs")
 plt.title("Device orientation to GPS performance")
