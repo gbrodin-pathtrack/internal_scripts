@@ -111,7 +111,6 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
             index += 1
         offset = 0
         while(index < len(data)):
-            offset += interval
             obsDatetime = startDatetime + datetime.timedelta(seconds=offset)
             pressRaw = data[index] + (data[index+1]<<8)
             press = decode16BitPress(pressRaw, sensor)
@@ -121,5 +120,6 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
                 tempFlag = False
                 pressObs["temp"] = temp
             outputArr.append(pressObs)
+            offset += interval
 
     return {"PressSingle":outputArr}
