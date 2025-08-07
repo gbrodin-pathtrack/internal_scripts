@@ -1,7 +1,9 @@
 import pandas as pd
+from os import listdir
+from os.path import isfile, join
 
-FILE_NAME = "shag_ImmersionAccel.pkl"
+pickleFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith(".pkl")]
 
-df = pd.read_pickle(FILE_NAME)
-
-df.to_csv(FILE_NAME[:-4]+".csv",index=False)
+for file in pickleFiles:
+    df = pd.read_pickle(file)
+    df.to_csv(file[:-4]+".csv",index=False)
