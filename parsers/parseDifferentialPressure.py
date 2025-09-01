@@ -16,8 +16,10 @@ def parseDifferentialPressureLine(data : np.ndarray, commonHeader : np.ndarray, 
 
     #extract header info
     startDateTime = parsePackedTimeZeroSS(data[:5])
-    temp = (data[5]/2) - 40
-    interval = int(data[6])
+    interval = int(data[5] & 0x0F)
+    #unsupported for now, just skip past these bytes
+    extraTempBytes = int(data[5] & 0xF0)
+    temp = (data[6]/2) - 40
 
     #start with invalid reference pressure
     ref = -1
@@ -27,7 +29,7 @@ def parseDifferentialPressureLine(data : np.ndarray, commonHeader : np.ndarray, 
     refArr = []
 
     #loop over data
-    index = 7
+    index = 7 + extraTempBytes
     while index < len(data):
         #check differential bit
         if data[index] & 0x01:
