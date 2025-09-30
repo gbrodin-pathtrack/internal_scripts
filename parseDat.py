@@ -21,6 +21,8 @@ from parsers.parseDifferentialPressure import parseDifferentialPressureLine
 
 USE_PICKLE = False
 
+ROOT = "./"
+
 #add headers here without the UHF bit set, UHF bit will be extracted and handled the same for all header types
 HEADERS = {0x90:parseGPSLine,
            0x92:parseGPSHeartbeatLine,
@@ -158,8 +160,8 @@ if len(sys.argv) > 1:
 #no command line args given, auto select all dat files in current directory
 else:
     #Every file name in current directory that starts with "Obs" and ends with ".dat"
-    wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.startswith("Obs") and f.endswith(".dat")]
+    wantedFiles = [f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.startswith("Obs") and f.endswith(".dat")]
 
 for fileName in wantedFiles:
     #only produce a combined file if there are more than 1 dat files
-    parseDatFile(fileName)
+    parseDatFile(ROOT+fileName)

@@ -10,6 +10,8 @@ LINE_OFFSET = 6
 
 USE_PICKLE = False
 
+ROOT = "./"
+
 def parseBSDat(fileName):
     with open(fileName, "r") as f:
         byteLines = [
@@ -46,8 +48,8 @@ if len(sys.argv) > 1:
 #no command line args given, auto select all dat files in current directory
 else:
     #Every file name in current directory that starts with "Obs" and ends with ".dat"
-    wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.startswith("Obs") and f.endswith(".dat") and "BS" in f]
+    wantedFiles = [f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.startswith("Obs") and f.endswith(".dat") and "BS" in f]
 
 for fileName in wantedFiles:
     #only produce a combined file if there are more than 1 dat files
-    parseBSDat(fileName)
+    parseBSDat(ROOT+fileName)

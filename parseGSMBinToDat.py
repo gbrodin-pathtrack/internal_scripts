@@ -2,6 +2,8 @@ from os import listdir
 from os.path import isfile, join
 import sys
 
+ROOT = "./"
+
 header = \
 """*************************************************************************************
 PathTrack Archival Tracking System Raw Data File for Tag XXXXX (NanoFix UHF Format)
@@ -20,7 +22,7 @@ def convertBinToDat(fileName):
 if len(sys.argv) > 1:
     wantedFiles= sys.argv[1:]
 else:
-    wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.startswith("Obs") and f.endswith(".bin")]
+    wantedFiles = [ROOT+f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.startswith("Obs") and f.endswith(".bin")]
 
 for file in wantedFiles:
     convertBinToDat(file)

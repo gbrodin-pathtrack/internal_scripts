@@ -45,7 +45,17 @@ accelBurstDF = pd.DataFrame({
     "activePortion":accelBursts.apply(lambda burst: len(burst[(burst["mag"] < 0.8) | (burst["mag"] > 1.2)])*100/len(burst))
 })
 
-obsDF["burstID"] = obsDF.apply(lambda obs: accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["datetime"] - obs.datetime < np.timedelta64(180))].tail(1).index[0], axis=1)
+def getBurstID(obs):
+    global accelBurstDF
+    bursts = accelBurstDF.loc[(accelBurstDF["tagID"] == obs.tagID) & (accelBurstDF["datetime"] - obs.datetime < np.timedelta64(180))]
+    if bursts.size == 0:
+        return -1
+    else:
+        return bursts.tail(1).index[0]
+
+obsDF["burstID"] = obsDF.apply(lambda obs: getBurstID(obs), axis=1)
+
+obsDF = obsDF[obsDF.burstID != -1]
 
 if SPLIT_PREV_FAIL:
     obsDF["prevSuccess"] = (obsDF["numSV"].shift(1) > 4) # | (obsDF["numSV"].shift(2) > 4)
