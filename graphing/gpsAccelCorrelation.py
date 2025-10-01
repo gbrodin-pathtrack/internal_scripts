@@ -9,6 +9,9 @@ USE_PICKLE = True
 
 SPLIT_PREV_FAIL = False
 
+#0 = active points, 1 = max magnitude, 2 = min magnitude
+TYPE = 2
+
 if USE_PICKLE:
     wantedExtension = ".pkl"
 else:
@@ -42,7 +45,9 @@ accelBurstDF = pd.DataFrame({
     "tagID":accelBursts["tagID"].first(),
     "datetime":accelBursts["datetime"].first(),
     "avgMag":accelBursts["mag"].mean(),
-    "activePortion":accelBursts.apply(lambda burst: len(burst[(burst["mag"] < 0.8) | (burst["mag"] > 1.2)])*100/len(burst))
+    "activePortion":accelBursts.apply(lambda burst: len(burst[(burst["mag"] < 0.8) | (burst["mag"] > 1.2)])*100/len(burst)),
+    "maxMag":accelBursts["mag"].max(),
+    "minMag":accelBursts["mag"].min(),
 })
 
 def getBurstID(obs):
@@ -86,15 +91,27 @@ if SPLIT_PREV_FAIL:
 
     plt.show()
 else:
-    x = accelBurstDF.iloc[obsDF.burstID].activePortion
-    y = obsDF.numSV
+    if TYPE == 0:
+        x = accelBurstDF.iloc[obsDF.burstID].activePortion
+        y = obsDF.numSV
+        plt.xlabel("Percentage of 'active' points (%)")
+        plt.ylabel("Num SVs")
+        plt.title("Accelerometer activity to GPS performance")
+    elif TYPE == 1:
+        x = accelBurstDF.iloc[obsDF.burstID].maxMag
+        y = obsDF.numSV
+        plt.xlabel("Maximum acceleration magnitude (g)")
+        plt.ylabel("Num SVs")
+        plt.title("Maximum magnitude to GPS performance")
+    elif TYPE == 2:
+        x = accelBurstDF.iloc[obsDF.burstID].minMag
+        y = obsDF.numSV
+        plt.xlabel("Minimum acceleration magnitude (g)")
+        plt.ylabel("Num SVs")
+        plt.title("Minimum magnitude to GPS performance")
 
     plt.scatter(x, y, marker='o', linewidth=0, alpha=0.5)
     plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)),color="black",linestyle=(0,(5,7)),linewidth=1)
-    plt.xlabel("Percentage of 'active' points (%)")
-    plt.ylabel("Num SVs")
-    plt.title("Accelerometer activity to GPS performance")
-
     plt.tight_layout()
     plt.show()
 
