@@ -18,9 +18,12 @@ from parsers.parseGPSHeartbeat import parseGPSHeartbeatLine
 from parsers.parseMixed import parseMixedLine
 from parsers.parseMagnetometer_Temp import parseMagnetometerLine_Temp
 from parsers.parseDifferentialPressure import parseDifferentialPressureLine
+from parsers.parseGPSImmersion import parseGPSImmersionLine
 from parsers.parseImmersion import parseImmersionLine
 
 USE_PICKLE = False
+
+UNSCRAMBLE = False
 
 ROOT = "./"
 
@@ -30,6 +33,7 @@ HEADERS = {0x90:parseGPSLine,
            0x94:parseGPSLine,
            0x96:parseGPSHeartbeatLine,
            0x98:parseNavGPSLine,
+           0x9C:parseGPSImmersionLine,
            0xA0:parseAccelLine,
            0xA2:parseAccelLine,
            0xA4:parseAccelLine,
@@ -52,13 +56,20 @@ HEADERS = {0x90:parseGPSLine,
 
 LINE_OFFSET = 6
 
+def byteArrFromLine(line : str):
+    if UNSCRAMBLE:
+        words = line.split()
+        return [int(words[(i*505) % 512]) for i in range(512)]
+    else:
+        return [int(byte) for byte in line.split()]
+
 def parseDatFile(fileName):
     print("Processing",fileName)
     start = time.time()
     #read every line from file, ignoring header lines and produce a list of np arrays of bytes
     with open(fileName, "r") as f:
         byteLines = [
-            np.array([int(byte) for byte in line.split()])
+            np.array(byteArrFromLine(line))
             for line in f
             if line[:1].isdigit()
         ]
