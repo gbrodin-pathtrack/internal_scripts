@@ -167,9 +167,22 @@ def parseDatFile(fileName):
     print("Time writing output files",end-start)
     print()
 
+args = sys.argv[1:]
+
+passedFiles = []
+passedArgs = []
+for arg in args:
+    if arg.startswith("-"):
+        passedArgs.append(arg.strip("-"))
+    else:
+        passedFiles.append(arg)
+
+if "enc" in passedArgs:
+    UNSCRAMBLE = True
+
 #if CLI given take arguments as list of files
-if len(sys.argv) > 1:
-    wantedFiles= sys.argv[1:]
+if len(passedFiles) > 0:
+    wantedFiles = passedFiles
 #no command line args given, auto select all dat files in current directory
 else:
     #Every file name in current directory that starts with "Obs" and ends with ".dat"
