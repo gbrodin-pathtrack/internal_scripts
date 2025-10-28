@@ -25,11 +25,13 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, 
 
     subsecondDuration = data[5] + (data[6] << 8)
 
+    validation = (subsecondDuration & 0x8000) != 0
+    subsecondDuration &= 0x7FFF
     if scalarFlag == 1:
         lower = data[7::2]
         upper = data[8::2]
         magArr = (((lower>>2) + (upper<<6))*accelScale)/8192
-        accelValues = [{"line":lineNum,"datetime":0,"mag":mag} for mag in magArr]
+        accelValues = [{"line":lineNum,"datetime":0,"mag":mag,"validation":validation} for mag in magArr]
 
         if POST_CALCS:
             interestingPoints = (magArr > (1 + INTERESTING_G_OFFSET)).sum() + (magArr < (1 - INTERESTING_G_OFFSET)).sum()
@@ -63,7 +65,7 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, 
             summary = {"line":lineNum, "datetime":startDateTime, "staticX":staticX, "staticY":staticY, "staticZ":staticZ, \
                        "dynMagSum":np.sum(dynMagArr), "dynMagAvg":np.mean(dynMagArr), "interestingPoints":interestingPoints}
         else:
-            accelValues = [{"line":lineNum,"datetime":0,"X":x,"Y":y,"Z":z,"mag":mag} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
+            accelValues = [{"line":lineNum,"datetime":0,"X":x,"Y":y,"Z":z,"mag":mag,"validation":validation} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
 
     timeStep = timedelta(microseconds=15625*(subsecondDuration/len(accelValues)))
     obsDatetime = startDateTime
