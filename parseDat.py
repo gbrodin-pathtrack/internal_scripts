@@ -82,6 +82,8 @@ def parseDatFile(fileName):
 
     start = time.time()
 
+    skipped = []
+
     for lineNum, line in enumerate(byteLines):
         #skip old type lines and debug/blank lines
         if line[0] < 0x10 or line[0] == 0xFF:
@@ -114,6 +116,8 @@ def parseDatFile(fileName):
             if "Unknown" not in tags[tagID].keys():
                 tags[tagID]["Unknown"] = []
             tags[tagID]["Unknown"].append(line)
+            print("Skipping line",lineNum,"due to unknown data type")
+            skipped.append(lineNum)
             continue
         
         #get handler function from data type byte
@@ -129,6 +133,11 @@ def parseDatFile(fileName):
         except ValueError as e:
             print("Skipping line",lineNum,"due to ValueError:")
             print(e)
+            skipped.append(lineNum)
+            continue
+        except IndexError as e:
+            print("Skipping line",lineNum,"due to IndexError")
+            skipped.append(lineNum)
             continue
         
         #unpack returned data
@@ -136,6 +145,8 @@ def parseDatFile(fileName):
             if dataTypeStr not in tags[tagID].keys():
                 tags[tagID][dataTypeStr] = []
             tags[tagID][dataTypeStr].extend(parsedData)
+
+    print("Skipped:",skipped)
 
     end = time.time()
     print("Time parsing lines",end-start)
