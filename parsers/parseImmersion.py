@@ -15,7 +15,7 @@ def parseImmersionLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : i
 
     index = 2
     while index < len(data):
-        obsTime = parsePackedTimeZeroSS(data[index:])
+        obsTime = parsePackedTimeZeroSS(data[index:]) - (7 * timeStep)
         index += 5
         blockSamples = parseUInt16(data[index:])
         index += 2
