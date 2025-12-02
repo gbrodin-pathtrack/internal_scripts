@@ -270,7 +270,7 @@ def writeRINEXtoFile(header, ephems, localFileName):
 #function to compare 2 lists of ephemerides, if more than 5 old ephemerides are non existant in the new list a warning is printed as this is unexpected
 def compareEphems(newEphems: list, oldEphems: list):
     numMissing = 0
-    print("Merging old list of ephemerides into new list ...")
+    print("Comparing old list of ephemerides to new list ...")
     for oldEphem in oldEphems:
         existing = False
         for newEphem in newEphems:
