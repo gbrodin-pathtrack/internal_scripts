@@ -267,10 +267,9 @@ def writeRINEXtoFile(header, ephems, localFileName):
     return False,localFileName
 
 
-#function to combine 2 lists of ephemerides, any ephemerides in <oldEphems> will be added to list <newEphems>
-#if any old ephemerides are non existant in the new list an error is printed as this is unexpected, the new list is sorted chronologically
-def combineEphems(newEphems: list, oldEphems: list):
-    numAdded = 0
+#function to compare 2 lists of ephemerides, if more than 5 old ephemerides are non existant in the new list a warning is printed as this is unexpected
+def compareEphems(newEphems: list, oldEphems: list):
+    numMissing = 0
     print("Merging old list of ephemerides into new list ...")
     for oldEphem in oldEphems:
         existing = False
@@ -279,14 +278,11 @@ def combineEphems(newEphems: list, oldEphems: list):
                 existing = True
                 break
         if existing == False:
-            numAdded += 1
-            newEphems.append(oldEphem)
-            print(oldEphem)
+            numMissing += 1
 
-    print(str(numAdded)+" old ephemerides non existant in new file")
-    if numAdded > 0:
+    print(str(numMissing)+" old ephemerides non existant in new file")
+    if numMissing > 5:
         print("WARNING all old ephemerides should be existant in new file")
-    newEphems.sort(key= lambda x: (x['time'],x['sat'],))
     return
 
 
@@ -436,7 +432,7 @@ def updateFile(date: datetime, validate: bool, useHourly: bool):
         print("File marked as complete, file shouldn't be modified")
         return False, True
 
-    combineEphems(nasaEphems, ptrackEphems)
+    compareEphems(nasaEphems, ptrackEphems)
 
     if validate and validateEphems(nasaEphems):
         markHeaderValid(nasaHeader)
