@@ -146,7 +146,8 @@ def parseDatFile(fileName):
                 tags[tagID][dataTypeStr] = []
             tags[tagID][dataTypeStr].extend(parsedData)
 
-    print("Skipped:",skipped)
+    if(len(skipped)>0):
+        print("Skipped lines:",skipped)
 
     end = time.time()
     print("Time parsing lines",end-start)

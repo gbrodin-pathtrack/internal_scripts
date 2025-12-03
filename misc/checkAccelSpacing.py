@@ -19,14 +19,11 @@ def checkSpacing(fileName):
 
     print(fileName)
     print("Time difference:")
-    print(" - Average: %.2fms" % (avgDiff * 1000))
+    print(" - Average: %.2fms (%.2fHz)" % ((avgDiff * 1000), avgRate))
     print(" - Std dev: %.2fms" % (df["timeDiff"].std() * 1000))
     print(" - Min: %.2fms" % (df["timeDiff"].min() * 1000))
     print(" - Max: %.2fms" % (df["timeDiff"].max() * 1000))
     print()
-    print("Equivalent rate: %.2fHz" % avgRate)
-
-    return
 
 
 if USE_PICKLE:

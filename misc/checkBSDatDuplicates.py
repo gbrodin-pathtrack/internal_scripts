@@ -39,10 +39,11 @@ def checkDatFile(fileName):
         if exists:
             tags[tagID]["duplicateLines"].append(line)
 
+    print(fileName)
     for tagID, tagLines in tags.items():
-        print("Tag"+str(tagID)+":")
-        print("Total Lines: "+str(len(tagLines["lines"])))
-        print("Duplicates: "+str(len(tagLines["duplicateLines"])))
+        print(" - Tag"+str(tagID)+":")
+        print("    - Total Lines: "+str(len(tagLines["lines"])))
+        print("    - Duplicates: "+str(len(tagLines["duplicateLines"])))
         print()
         if len(tagLines["duplicateLines"]) == 0:
             continue
