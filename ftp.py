@@ -281,7 +281,7 @@ def compareEphems(newEphems: list, oldEphems: list):
             numMissing += 1
 
     print(str(numMissing)+" old ephemerides non existant in new file")
-    if numMissing > 5:
+    if numMissing > 10:
         print("WARNING all old ephemerides should be existant in new file")
     return
 
