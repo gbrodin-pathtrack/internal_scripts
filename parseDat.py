@@ -5,6 +5,7 @@ from os.path import isfile, join
 import sys
 import time
 
+from parsers.parserSettings import setSetting
 from parsers.parseGPS import parseGPSLine
 from parsers.parsePressSingle import parsePressSingleLine
 from parsers.parseAccel import parseAccelLine
@@ -28,6 +29,8 @@ UNSCRAMBLE = False
 ATTACH_ID = False
 
 ROOT = "./"
+
+setSetting("DIV_TTF",10)
 
 #add headers here without the UHF bit set, UHF bit will be extracted and handled the same for all header types
 HEADERS = {0x90:parseGPSLine,
@@ -221,6 +224,9 @@ if "id" in passedArgs:
 
 if "pkl" in passedArgs:
     USE_PICKLE = True
+
+if "ttf1" in passedArgs:
+    setSetting("DIV_TTF",1)
 
 #if CLI given take arguments as list of files
 if len(passedFiles) > 0:

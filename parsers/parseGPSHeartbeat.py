@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import numpy as np
 from parsers.parsePackedTime import parsePackedTime
 from parsers.parseInt import parseInt32, parseUInt32, parseUInt16
+from parsers.parserSettings import getSetting
 
 OBS_TYPE_MEASX      = 0
 OBS_TYPE_MEASX_TR   = 1
@@ -81,7 +82,7 @@ def parseObs(data : np.ndarray, output : dict[str, list], lineNum) -> int:
     if obsType == OBS_TYPE_MEASX or obsType == OBS_TYPE_MEASX_TR or obsType == OBS_TYPE_MEASX_F:
         if obsType != OBS_TYPE_MEASX_F:
             obs["vbatt"] = data[6]
-            obs["TTF"] = data[7]/10
+            obs["TTF"] = data[7]/getSetting("DIV_TTF")
             obs["startDatetime"] = obs["datetime"] - timedelta(seconds=obs["TTF"])
             size += 2
         parseMEASXObs(data[size:size+5*numSVs], obs, satArr)

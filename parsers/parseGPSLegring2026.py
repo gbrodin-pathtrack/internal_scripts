@@ -1,8 +1,7 @@
 import datetime
 import numpy as np
 from parsers.parsePackedTime import parsePackedTime
-
-DIV_TTF = 10
+from parsers.parserSettings import getSetting
 
 def convSatTime(svTime : int):
     if svTime < 200:
@@ -27,7 +26,7 @@ def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list, six
         numImmersionBits -= byteBits
     numSV = data[9]
     vbatt = data[10]
-    ttf = data[11]/DIV_TTF
+    ttf = data[11]/getSetting("DIV_TTF")
     svTimes = []
     if sixSVTimes:
         index = 12
