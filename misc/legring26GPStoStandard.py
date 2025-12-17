@@ -5,7 +5,7 @@ import sys
 ROOT = "./"
 
 def convertLine(byteLine : list):
-    if(byteLine[0] != 0x9C):
+    if(byteLine[0] != 0x9C and byteLine[0] != 0x9E):
         return byteLine
     
     length = byteLine[1] + ((byteLine[2] & 0x0F) << 8)
@@ -32,8 +32,8 @@ def convertLine(byteLine : list):
             newIndex += 1
             index += 1
 
-        #skip time first sat
-        index += 1
+        #skip sv times
+        index += 6 if byteLine[0] == 0x9E else 1
         while index < end:
             #copy SV
             for _ in range(5):
