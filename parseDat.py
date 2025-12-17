@@ -218,15 +218,22 @@ for arg in args:
 
 if "enc" in passedArgs:
     UNSCRAMBLE = True
+    passedArgs.remove("enc")
 
 if "id" in passedArgs:
     ATTACH_ID = True
+    passedArgs.remove("id")
 
 if "pkl" in passedArgs:
     USE_PICKLE = True
+    passedArgs.remove("pkl")
 
 if "ttf1" in passedArgs:
     setSetting("DIV_TTF",1)
+    passedArgs.remove("ttf1")
+
+if len(passedArgs) > 0:
+    print("Unrecongised arguments:",passedArgs)
 
 #if CLI given take arguments as list of files
 if len(passedFiles) > 0:
