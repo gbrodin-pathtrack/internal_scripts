@@ -25,6 +25,8 @@ USE_PICKLE = False
 
 UNSCRAMBLE = False
 
+ATTACH_ID = False
+
 ROOT = "./"
 
 #add headers here without the UHF bit set, UHF bit will be extracted and handled the same for all header types
@@ -63,7 +65,7 @@ def byteArrFromLine(line : str):
     else:
         return [int(byte) for byte in line.split()]
 
-def parseDatFile(fileName):
+def parseDatFile(fileName : str):
     print("Processing",fileName)
     start = time.time()
     #read every line from file, ignoring header lines and produce a list of np arrays of bytes
@@ -84,6 +86,11 @@ def parseDatFile(fileName):
 
     skipped = []
 
+    tagIDidx = fileName.lower().find("tag")
+    loggerTagID = 0
+    if tagIDidx != -1:
+        loggerTagID = int(fileName[tagIDidx+3:tagIDidx+8])
+
     for lineNum, line in enumerate(byteLines):
         #skip old type lines and debug/blank lines
         if line[0] < 0x10 or line[0] == 0xFF:
@@ -101,21 +108,21 @@ def parseDatFile(fileName):
         #lineInfo = line[2]&0xF0
 
         #extract tag ID if applicable from common header
-        tagID = "logger"
+        tagIDStr = "logger"
         dataStart = 3
         if uhfType == 1:
-            tagID = "Tag"+str(line[3] + (line[4]<<8))
+            tagIDStr = "Tag"+str(line[3] + (line[4]<<8))
             dataStart = 5
 
         #create entry for tag ID if needed
-        if tagID not in tags.keys():
-            tags[tagID] = {}
+        if tagIDStr not in tags.keys():
+            tags[tagIDStr] = {}
 
         #if datatype not known, add line to list of unknowns and skip
         if dataType not in HEADERS.keys():
-            if "Unknown" not in tags[tagID].keys():
-                tags[tagID]["Unknown"] = []
-            tags[tagID]["Unknown"].append(line)
+            if "Unknown" not in tags[tagIDStr].keys():
+                tags[tagIDStr]["Unknown"] = []
+            tags[tagIDStr]["Unknown"].append(line)
             print("Skipping line",lineNum,"due to unknown data type")
             skipped.append(lineNum)
             continue
@@ -142,9 +149,9 @@ def parseDatFile(fileName):
         
         #unpack returned data
         for dataTypeStr, parsedData in parsedDataTypes.items():
-            if dataTypeStr not in tags[tagID].keys():
-                tags[tagID][dataTypeStr] = []
-            tags[tagID][dataTypeStr].extend(parsedData)
+            if dataTypeStr not in tags[tagIDStr].keys():
+                tags[tagIDStr][dataTypeStr] = []
+            tags[tagIDStr][dataTypeStr].extend(parsedData)
 
     if(len(skipped)>0):
         print("Skipped lines:",skipped)
@@ -153,11 +160,11 @@ def parseDatFile(fileName):
     print("Time parsing lines",end-start)
     start = time.time()
     #generate output files for each tag for each data type
-    for tagID, tagData in tags.items():
+    for tagIDStr, tagData in tags.items():
         for dataType, obsArr in tagData.items():
             tagIDfileStr = ""
-            if tagID != "logger":
-                tagIDfileStr = "_"+tagID
+            if tagIDStr != "logger":
+                tagIDfileStr = "_"+tagIDStr
 
             #dont make CSV for unknown data types
             if dataType == "Unknown" or dataType == "Unknown_M":
@@ -166,6 +173,13 @@ def parseDatFile(fileName):
                 continue
 
             df = pd.DataFrame(obsArr)
+
+            if ATTACH_ID:
+                if tagIDStr == "logger":
+                    df["tagID"] = loggerTagID
+                else:
+                    df["tagID"] = int(tagIDStr[-5:])
+
             if USE_PICKLE:
                 df.to_pickle(fileName[:-4]+tagIDfileStr+"_"+dataType+".pkl")
             else:
@@ -185,12 +199,18 @@ passedFiles = []
 passedArgs = []
 for arg in args:
     if arg.startswith("-"):
-        passedArgs.append(arg.strip("-"))
+        passedArgs.append(arg.strip("-").lower())
     else:
         passedFiles.append(arg)
 
 if "enc" in passedArgs:
     UNSCRAMBLE = True
+
+if "id" in passedArgs:
+    ATTACH_ID = True
+
+if "pkl" in passedArgs:
+    USE_PICKLE = True
 
 #if CLI given take arguments as list of files
 if len(passedFiles) > 0:

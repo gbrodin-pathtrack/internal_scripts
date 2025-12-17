@@ -64,6 +64,11 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, 
             
             summary = {"line":lineNum, "datetime":startDateTime, "staticX":staticX, "staticY":staticY, "staticZ":staticZ, \
                        "dynMagSum":np.sum(dynMagArr), "dynMagAvg":np.mean(dynMagArr), "interestingPoints":interestingPoints}
+
+            # vedbaTimeStep = timedelta(microseconds=15625*(subsecondDuration/5))
+            # summary5 = []
+            # for i in range(5):
+            #     summary5.append({"line":lineNum,"datetime":startDateTime+(vedbaTimeStep*i),"dynMagAvg":np.mean(dynMagArr[i*25:(i+1)*25])})
         else:
             accelValues = [{"line":lineNum,"datetime":0,"X":x,"Y":y,"Z":z,"mag":mag,"validation":validation} for x, y, z, mag in zip(xArr, yArr, zArr, magArr)]
 
@@ -73,7 +78,7 @@ def parseAccelLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, 
         obs["datetime"] = obsDatetime
         obsDatetime += timeStep
     if POST_CALCS:
-        return {"Accel":accelValues,"AccelSummary":[summary]}
+        return {"Accel":accelValues,"AccelSummary":[summary]}#,"AccelSummary5":summary5
     else:
         return {"Accel":accelValues}
     

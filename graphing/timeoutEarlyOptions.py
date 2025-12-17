@@ -24,14 +24,16 @@ else:
 #convert datetime string to datetime
 obsDF["datetime"] = pd.to_datetime(obsDF["datetime"])
 
-START = 5
-STOP = 20
+START = 1
+STOP = 5
 STEP = 0.1
 
 timeoutOptions = np.arange(START,STOP+STEP,STEP)
 timeoutDF = pd.DataFrame(timeoutOptions,columns=["timeout"])
-timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["TTF"] < x.timeout]["TTF"]) + x.timeout*len(obsDF.loc[obsDF["TTF"] >= x.timeout]), axis=1)
-timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF["TTF"] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)
+timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["numSV"] > 0]["TTF"]) \
+                                      + sum(obsDF.loc[(obsDF["numSV"] == 0) & (obsDF["firstSV"] < x.timeout)]["TTF"]) \
+                                      + x.timeout*len(obsDF.loc[(obsDF["numSV"] == 0) & (obsDF["firstSV"] >= x.timeout)]), axis=1)
+timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF["firstSV"] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)
 timeoutDF["successRate"] = (timeoutDF["successes"]/len(obsDF["TTF"]))*100
 timeoutDF["onTimePerFix"] = timeoutDF["onTime"]/timeoutDF["successes"]
 
@@ -39,10 +41,10 @@ singleGraph = True
 
 fig, ax1 = plt.subplots()
 
-plt.title("Timeout Options vs Performance")
+plt.title("Early Timeout Options vs Performance")
 
 col = "tab:red"
-ax1.set_xlabel("Timeout (s)")
+ax1.set_xlabel("Early Timeout (s)")
 ax1.set_xticks(np.arange(START,STOP+1,1))
 ax1.set_ylabel("On time per fix (s)", color=col)
 ax1.plot(timeoutDF["timeout"], timeoutDF["onTimePerFix"], color=col)

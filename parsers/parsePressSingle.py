@@ -120,6 +120,7 @@ def parsePressSingleLine(data : np.ndarray, commonHeader : np.ndarray, lineNum :
                 tempFlag = False
                 pressObs["temp"] = temp
             outputArr.append(pressObs)
+            #pressObs["raw"] = pressRaw
             offset += interval
 
     return {"PressSingle":outputArr}
