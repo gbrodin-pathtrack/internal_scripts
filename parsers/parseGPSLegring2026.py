@@ -4,6 +4,11 @@ from parsers.parsePackedTime import parsePackedTime
 
 DIV_TTF = 10
 
+def convSatTime(svTime : int):
+    if svTime < 200:
+        return svTime/10
+    return 20 + (svTime-200)
+
 def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list, sixSVTimes : bool) -> int:
     fixTime = parsePackedTime(data[:5])
     numImmersionBits = data[5]
@@ -27,10 +32,10 @@ def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list, six
     if sixSVTimes:
         index = 12
         for _ in range(6):
-            svTimes.append(data[index]/DIV_TTF)
+            svTimes.append(convSatTime(data[index]))
             index += 1
     else:
-        svTimes.append(data[12]/DIV_TTF)
+        svTimes.append(convSatTime(data[12]))
         index = 13
     startTime = fixTime - datetime.timedelta(seconds=ttf)
     obs = {"line":lineNum,"datetime":fixTime,"numSV":numSV,"vbatt":vbatt,"TTF":ttf,"startDatetime":startTime,"immersion":immersionString}
