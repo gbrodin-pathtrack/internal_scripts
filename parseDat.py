@@ -59,6 +59,7 @@ HEADERS = {0x90:parseGPSLine,
 LINE_OFFSET = 6
 
 def byteArrFromLine(line : str):
+    global UNSCRAMBLE
     if UNSCRAMBLE:
         words = line.split()
         return [int(words[(i*505) % 512]) for i in range(512)]
@@ -66,15 +67,23 @@ def byteArrFromLine(line : str):
         return [int(byte) for byte in line.split()]
 
 def parseDatFile(fileName : str):
+    global UNSCRAMBLE
     print("Processing",fileName)
     start = time.time()
     #read every line from file, ignoring header lines and produce a list of np arrays of bytes
     with open(fileName, "r") as f:
+        allLines = f.readlines()
+        headerLines = [line for line in allLines if not line[:1].isdigit()]
+        prevUnscramble = UNSCRAMBLE
+        for line in headerLines:
+            if "{enc}" in line:
+                UNSCRAMBLE = True
         byteLines = [
             np.array(byteArrFromLine(line))
-            for line in f
+            for line in allLines
             if line[:1].isdigit()
         ]
+        UNSCRAMBLE = prevUnscramble
 
     end = time.time()
     print("Time reading and converting file",end-start)
