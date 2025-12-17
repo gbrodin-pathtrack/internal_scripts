@@ -4,7 +4,7 @@ from parsers.parsePackedTime import parsePackedTime
 
 DIV_TTF = 10
 
-def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list) -> int:
+def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list, sixSVTimes : bool) -> int:
     fixTime = parsePackedTime(data[:5])
     numImmersionBits = data[5]
     immersionBytes = data[6:9]
@@ -23,13 +23,22 @@ def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list) -> 
     numSV = data[9]
     vbatt = data[10]
     ttf = data[11]/DIV_TTF
-    firstSV = data[12]/DIV_TTF
+    svTimes = []
+    if sixSVTimes:
+        index = 12
+        for _ in range(6):
+            svTimes.append(data[index]/DIV_TTF)
+            index += 1
+    else:
+        svTimes.append(data[12]/DIV_TTF)
+        index = 13
     startTime = fixTime - datetime.timedelta(seconds=ttf)
-    obs = {"line":lineNum,"datetime":fixTime,"numSV":numSV,"vbatt":vbatt,"TTF":ttf,"startDatetime":startTime,"firstSV":firstSV,"immersion":immersionString}
+    obs = {"line":lineNum,"datetime":fixTime,"numSV":numSV,"vbatt":vbatt,"TTF":ttf,"startDatetime":startTime,"immersion":immersionString}
+    for i in range(len(svTimes)):
+        obs["svTime_%d" % (i+1)] = svTimes[i]
     obsArr.append(obs)
 
-    end = 13 + numSV*5
-    index = 13
+    end = index + numSV*5
     while index < end:
         sat = {}
         sat.update(obs)
@@ -42,7 +51,7 @@ def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list) -> 
     return end
 
 
-def parseGPSImmersionLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
+def parseGPSLegring2026(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
     if mixed:
         raise ValueError("No mixed implementation for GPS Immersion")
 
@@ -50,7 +59,7 @@ def parseGPSImmersionLine(data : np.ndarray, commonHeader : np.ndarray, lineNum 
     satArr = []
     index = 0
     while index < len(data):
-        index += parseObs(lineNum, data[index:], obsArr, satArr)
+        index += parseObs(lineNum, data[index:], obsArr, satArr, commonHeader[0] == 0x9E)
 
     if len(satArr) > 0:
         return {"GPS_IM_Obs":obsArr,"GPS_SVs":satArr}

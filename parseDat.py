@@ -18,7 +18,7 @@ from parsers.parseGPSHeartbeat import parseGPSHeartbeatLine
 from parsers.parseMixed import parseMixedLine
 from parsers.parseMagnetometer_Temp import parseMagnetometerLine_Temp
 from parsers.parseDifferentialPressure import parseDifferentialPressureLine
-from parsers.parseGPSImmersion import parseGPSImmersionLine
+from parsers.parseGPSLegring2026 import parseGPSLegring2026
 from parsers.parseImmersion import parseImmersionLine
 
 USE_PICKLE = False
@@ -35,7 +35,8 @@ HEADERS = {0x90:parseGPSLine,
            0x94:parseGPSLine,
            0x96:parseGPSHeartbeatLine,
            0x98:parseNavGPSLine,
-           0x9C:parseGPSImmersionLine,
+           0x9C:parseGPSLegring2026,
+           0x9E:parseGPSLegring2026,
            0xA0:parseAccelLine,
            0xA2:parseAccelLine,
            0xA4:parseAccelLine,
