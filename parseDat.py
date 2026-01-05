@@ -106,7 +106,7 @@ def parseDatFile(fileName : str):
 
     for lineNum, line in enumerate(byteLines):
         #skip old type lines and debug/blank lines
-        if line[0] < 0x10 or line[0] == 0xFF:
+        if line[0] < 0x10  or (line[0] & 0xF0) == 0xF0:
             continue
 
         #Add offset so line numbers match line numbers in dat file
@@ -241,8 +241,8 @@ if len(passedFiles) > 0:
 #no command line args given, auto select all dat files in current directory
 else:
     #Every file name in current directory that starts with "Obs" and ends with ".dat"
-    wantedFiles = [f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.startswith("Obs") and f.endswith(".dat")]
+    wantedFiles = [ROOT + f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.startswith("Obs") and f.endswith(".dat")]
 
 for fileName in wantedFiles:
     #only produce a combined file if there are more than 1 dat files
-    parseDatFile(ROOT+fileName)
+    parseDatFile(fileName)

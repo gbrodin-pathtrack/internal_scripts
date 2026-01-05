@@ -1,10 +1,9 @@
 import pandas as pd
 import numpy as np
+from parsers.parseInt import parseUInt16, parseUInt32
 from os import listdir
 from os.path import isfile, join
 import sys
-
-SIGNAL_STRENGTH = {0: "'-inf..-100", 1:"'-99..inf", 2:"'-inf..-90", 3:"'-89..-80", 4:"'-79..-70", 5:"'-69..-60", 6:"'-59..-50", 7:"'-49..inf"}
 
 LINE_OFFSET = 6
 
@@ -20,25 +19,30 @@ def parseBSDat(fileName):
             if line[:1].isdigit()
         ]
 
-    metaArr = []
+    contactArr = []
     for lineNum, line in enumerate(byteLines):
-        #skip old style lines or debug lines
-        if line[0] < 0x10 or (line[0] & 0xF0) == 0xF0:
+        #only process contact lines
+        if line[0] != 0xFD:
             continue
-        signal = (line[2] & 0xE0) >> 5
-        metaArr.append({"lineNum":lineNum + LINE_OFFSET,
-                        "transmissionStart":bool(line[2] & 0x10),
-                        "tagID":line[3] + (line[4]<<8),
-                        "fastMode":signal > 1,
-                        "RSSI":SIGNAL_STRENGTH[signal]
-                        })
-    
-    df = pd.DataFrame(metaArr)
+
+        length = line[1] + (line[2] << 8)
+        index = 3
+        while index < length:
+            contactArr.append(
+                {"lineNum":lineNum + LINE_OFFSET,
+                 "tagID":parseUInt16(line[index:]),
+                 "vbatt":line[index+2],
+                 "secondsOfYear":(parseUInt32(line[index+3:]) & 0x7FFFFFFF) >> 6,
+                 "RSSI":(line[index+7] & 0x7F) - (line[index+7] & 0x80) - line[index+8]}
+            )
+            index += 9
+
+    df = pd.DataFrame(contactArr)
 
     if USE_PICKLE:
-        df.to_pickle(fileName[:-4]+"_meta.pkl")
+        df.to_pickle(fileName[:-4]+"_contacts.pkl")
     else:
-        df.to_csv(fileName[:-4]+"_meta.csv",index=False)
+        df.to_csv(fileName[:-4]+"_contacts.csv",index=False)
 
 
 
