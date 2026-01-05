@@ -24,9 +24,6 @@ def convertLine(byteLine : list):
             index += 1
         #skip immersion data
         index += 4
-        
-        #get end of obs from num SVs
-        end = index + ((byteLine[index] * 5) + 4)
 
         #copy numSV, Vbatt, TTF
         numSVIndex = newIndex
@@ -37,6 +34,9 @@ def convertLine(byteLine : list):
 
         #skip sv times
         index += 6 if byteLine[0] == 0x9E else 1
+
+        #get end of obs from num SVs
+        end = index + ((newByteLine[numSVIndex] * 5))
 
         wantedSV = 0
         while index < end:
