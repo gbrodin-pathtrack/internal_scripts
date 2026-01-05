@@ -4,6 +4,8 @@ import sys
 
 ROOT = "./"
 
+MIN_CNR = 25
+
 def convertLine(byteLine : list):
     if(byteLine[0] != 0x9C and byteLine[0] != 0x9E):
         return byteLine
@@ -27,6 +29,7 @@ def convertLine(byteLine : list):
         end = index + ((byteLine[index] * 5) + 4)
 
         #copy numSV, Vbatt, TTF
+        numSVIndex = newIndex
         for _ in range(3):
             newByteLine[newIndex] = byteLine[index]
             newIndex += 1
@@ -34,20 +37,27 @@ def convertLine(byteLine : list):
 
         #skip sv times
         index += 6 if byteLine[0] == 0x9E else 1
+
+        wantedSV = 0
         while index < end:
-            #copy SV
-            for _ in range(5):
-                newByteLine[newIndex] = byteLine[index]
-                newIndex += 1
-                index += 1
+            #copy SV if good CNR, else skip
+            if byteLine[index+1] >= MIN_CNR:
+                for _ in range(5):
+                    newByteLine[newIndex] = byteLine[index]
+                    newIndex += 1
+                    index += 1
+                wantedSV += 1
+            else:
+                index += 5
+
+        #update numSVs based on number actually copied
+        newByteLine[numSVIndex] = wantedSV
 
     newByteLine[1] = newIndex & 0xFF
     newByteLine[2] = (newIndex >> 8) & 0xFF
 
     return newByteLine
 
-        
-        
 
 def convertFile(fileName):
     with open(fileName, "r") as legring, open(fileName[:-4]+"_converted.dat","w") as standard:
@@ -70,8 +80,8 @@ if len(sys.argv) > 1:
 #no command line args given, auto select all dat files in current directory
 else:
     #Every file name in current directory that starts with "Obs" and ends with ".dat"
-    wantedFiles = [f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.startswith("Obs") and f.endswith(".dat") and "unscrambled" in f and "converted" not in f]
+    wantedFiles = [ROOT + f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.startswith("Obs") and f.endswith(".dat") and "unscrambled" in f and "converted" not in f]
 
 for fileName in wantedFiles:
     #only produce a combined file if there are more than 1 dat files
-    convertFile(ROOT+fileName)
+    convertFile(fileName)

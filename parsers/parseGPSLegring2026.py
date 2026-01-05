@@ -3,6 +3,8 @@ import numpy as np
 from parsers.parsePackedTime import parsePackedTime
 from parsers.parserSettings import getSetting
 
+MIN_CNR = 25
+
 def convSatTime(svTime : int):
     if svTime < 200:
         return svTime/10
@@ -24,7 +26,7 @@ def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list, six
                 immersionString += "0"
         immersionIndex += 1
         numImmersionBits -= byteBits
-    numSV = data[9]
+    totalSV = data[9]
     vbatt = data[10]
     ttf = data[11]/getSetting("DIV_TTF")
     svTimes = []
@@ -37,20 +39,25 @@ def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list, six
         svTimes.append(convSatTime(data[12]))
         index = 13
     startTime = fixTime - datetime.timedelta(seconds=ttf)
-    obs = {"line":lineNum,"datetime":fixTime,"numSV":numSV,"vbatt":vbatt,"TTF":ttf,"startDatetime":startTime,"immersion":immersionString}
+    obs = {"line":lineNum,"datetime":fixTime,"numSV":0,"numBadSV":0,"vbatt":vbatt,"TTF":ttf,"startDatetime":startTime,"immersion":immersionString}
     for i in range(len(svTimes)):
         obs["svTime_%d" % (i+1)] = svTimes[i]
     obsArr.append(obs)
-
-    end = index + numSV*5
+    wantedSV = 0
+    end = index + totalSV*5
     while index < end:
         sat = {}
         sat.update(obs)
         sat["ID"] = data[index]
+        if data[index+1] >= MIN_CNR:
+            wantedSV += 1
         sat["CNR"] = data[index+1]
         sat["codePhase"] = data[index+2] + (data[index + 3]<<8) + (data[index + 4]<<16)
         index += 5
         satArr.append(sat)
+
+    obs["numSV"] = wantedSV
+    obs["numBadSV"] = totalSV - wantedSV
 
     return end
 
