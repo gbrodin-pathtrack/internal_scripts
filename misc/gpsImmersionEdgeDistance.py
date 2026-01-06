@@ -23,9 +23,14 @@ else:
     obsDF = pd.read_csv(gpsFileName)
     immDF = pd.read_csv(immFileName)
 
+tagImmDFs = {}
+
+for tagID in obsDF["tagID"].unique():
+    tagImmDFs[tagID] = immDF.loc[immDF["tagID"] == tagID]
+
 def getEdgeDistance(obs):
-    global immDF
-    tagImmDF = immDF.loc[immDF["tagID"] == obs.tagID]
+    global tagImmDFs
+    tagImmDF = tagImmDFs[obs.tagID]
     tagImmDF["timeDiff"] = (tagImmDF["datetime"] - obs.datetime).dt.total_seconds()
     triggerIdx = tagImmDF.loc[tagImmDF["timeDiff"] < 0, "timeDiff"].idxmax()
     if tagImmDF.iloc[triggerIdx].immersed == True:
@@ -43,6 +48,7 @@ for distance in range(8):
     distanceDF = obsDF.loc[obsDF["edgeDistance"] == distance]
     print("Num SVs for edge distance %d:" % distance)
     print(" - Success Rate (>=5): %d%%" % ((len(distanceDF.loc[distanceDF["numSV"] >= 5])/len(distanceDF))*100))
+    print(" - Zero Rate: %d%%" % ((len(distanceDF.loc[distanceDF["numSV"] == 0])/len(distanceDF))*100))
     print(" - Average: %.2f" % np.mean(distanceDF["numSV"]))
     print(" - Maximum: %.1f" % distanceDF["numSV"].max())
     print(" - 90th Percentile: %.1f" % np.percentile(distanceDF["numSV"], 90))
