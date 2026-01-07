@@ -13,6 +13,8 @@ def convSatTime(svTime : int):
 def parseObs(lineNum : int, data : np.ndarray, obsArr : list, satArr : list, sixSVTimes : bool) -> int:
     fixTime = parsePackedTime(data[:5])
     numImmersionBits = data[5]
+    if numImmersionBits == 0xFF:
+        numImmersionBits = 0
     immersionBytes = data[6:9]
     immersionString = "'"
     immersionIndex = 0
