@@ -26,8 +26,8 @@ else:
     obsDF = pd.read_csv(gpsFileName)
     immDF = pd.read_csv(immFileName)
 
-obsDF["cancelledZero"] = obsDF["numSV"] == 0
-obsDF["cancelledWet"] = (obsDF["numSV"] > 0) & (obsDF["numSV"] < 5) & (obsDF["TTF"] < 20)
+obsDF["cancelledZero"] = (obsDF["numSV"] == 0) & (obsDF["TTF"] >= 5)
+obsDF["cancelledWet"] = ((obsDF["numSV"] == 0) & (obsDF["TTF"] < 5)) | ((obsDF["numSV"] > 0) & (obsDF["numSV"] < 5) & (obsDF["TTF"] < 20)) | ((obsDF["numSV"] == 5) & (obsDF["TTF"] < 5))
 
 obsDF["cancelled"] = obsDF["cancelledZero"] | obsDF["cancelledWet"]
 obsDF["saved"] = 20 - obsDF["TTF"]
@@ -71,13 +71,15 @@ def getPrevWet(obs):
     global tagEdgeDFs
     tagEdgeDF = tagEdgeDFs[obs.tagID]
     tagEdgeDF["timeDiff"] = (tagEdgeDF["datetime"] - obs.datetime).dt.total_seconds()
-    triggerIdx = tagEdgeDF.loc[tagEdgeDF["timeDiff"] < 0, "timeDiff"].idxmax()
-    return tagEdgeDF.prevWet.iloc[triggerIdx]
+    return tagEdgeDF.prevWet.iloc[tagEdgeDF.loc[tagEdgeDF["timeDiff"] < 0, "timeDiff"].idxmax()]
 
 obsDF["prevWet"] = obsDF.apply(getPrevWet, axis=1)
 
 singleDF = obsDF.loc[obsDF["prevWet"] == 1].copy()
 multiDF = obsDF.loc[obsDF["prevWet"] > 1].copy()
+
+print("Percent triggered by single wet: %d%%" % ((len(singleDF) / len(obsDF)) * 100))
+print()
 
 print("Triggered by single wet:")
 print("Percent cancelled zero: %d%%" % ((len(singleDF.loc[singleDF["cancelledZero"] == True]) / len(singleDF)) * 100))
