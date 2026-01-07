@@ -63,7 +63,7 @@ for tagImmDF in tagImmDFs.values():
     numSingleEdges += len(edgeDF.loc[edgeDF["prevWet"] == 1])
     tagEdgeDFs[edgeDF.tagID.iloc[0]] = edgeDF.reset_index(drop=True)
 
-print("Percentage of single edges: %d%%" % ((numSingleEdges / numEdges) * 100))
+print("Percentage of single edges: %.1f%%" % ((numSingleEdges / numEdges) * 100))
 
 print()
 
@@ -78,20 +78,24 @@ obsDF["prevWet"] = obsDF.apply(getPrevWet, axis=1)
 singleDF = obsDF.loc[obsDF["prevWet"] == 1].copy()
 multiDF = obsDF.loc[obsDF["prevWet"] > 1].copy()
 
-print("Percent triggered by single wet: %d%%" % ((len(singleDF) / len(obsDF)) * 100))
+print("Percent triggered by single wet: %.1f%%" % ((len(singleDF) / len(obsDF)) * 100))
 print()
 
 print("Triggered by single wet:")
-print("Percent cancelled zero: %d%%" % ((len(singleDF.loc[singleDF["cancelledZero"] == True]) / len(singleDF)) * 100))
-print("Percent cancelled wet: %d%%" % ((len(singleDF.loc[singleDF["cancelledWet"] == True]) / len(singleDF)) * 100))
+print("Percent cancelled zero: %.1f%%" % ((len(singleDF.loc[singleDF["cancelledZero"] == True]) / len(singleDF)) * 100))
+print("Percent cancelled wet: %.1f%%" % ((len(singleDF.loc[singleDF["cancelledWet"] == True]) / len(singleDF)) * 100))
 print("Average cancel saving: %.2fs" % singleDF.loc[singleDF["cancelled"] == True, "saved"].mean())
-print("Success rate of non cancelled: %d%%" % ((len(singleDF.loc[(singleDF["numSV"] >= 5) & (singleDF["cancelled"] == False)]) / len(singleDF.loc[singleDF["cancelled"] == False])) * 100))
-print("Overall success rate: %d%%" % ((len(singleDF.loc[singleDF["numSV"] >= 5]) / len(singleDF)) * 100))
+print("Success rate of non cancelled: %.1f%%" % ((len(singleDF.loc[(singleDF["numSV"] >= 5) & (singleDF["cancelled"] == False)]) / len(singleDF.loc[singleDF["cancelled"] == False])) * 100))
+print("Overall success rate: %.1f%%" % ((len(singleDF.loc[singleDF["numSV"] >= 5]) / len(singleDF)) * 100))
 
 print()
 print("Triggered by multiple wet:")
-print("Percent cancelled zero: %d%%" % ((len(multiDF.loc[multiDF["cancelledZero"] == True]) / len(multiDF)) * 100))
-print("Percent cancelled wet: %d%%" % ((len(multiDF.loc[multiDF["cancelledWet"] == True]) / len(multiDF)) * 100))
+print("Percent cancelled zero: %.1f%%" % ((len(multiDF.loc[multiDF["cancelledZero"] == True]) / len(multiDF)) * 100))
+print("Percent cancelled wet: %.1f%%" % ((len(multiDF.loc[multiDF["cancelledWet"] == True]) / len(multiDF)) * 100))
 print("Average cancel saving: %.2fs" % multiDF.loc[multiDF["cancelled"] == True, "saved"].mean())
-print("Success rate of non cancelled: %d%%" % ((len(multiDF.loc[(multiDF["numSV"] >= 5) & (multiDF["cancelled"] == False)]) / len(multiDF.loc[multiDF["cancelled"] == False])) * 100))
-print("Overall success rate: %d%%" % ((len(multiDF.loc[multiDF["numSV"] >= 5]) / len(multiDF)) * 100))
+print("Success rate of non cancelled: %.1f%%" % ((len(multiDF.loc[(multiDF["numSV"] >= 5) & (multiDF["cancelled"] == False)]) / len(multiDF.loc[multiDF["cancelled"] == False])) * 100))
+print("Overall success rate: %.1f%%" % ((len(multiDF.loc[multiDF["numSV"] >= 5]) / len(multiDF)) * 100))
+
+print()
+print("Success average on time: %.2f" % obsDF.loc[obsDF["numSV"] >= 5, "TTF"].mean())
+print("Fail average on time: %.2f" % obsDF.loc[obsDF["numSV"] < 5, "TTF"].mean())
