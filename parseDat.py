@@ -74,20 +74,40 @@ def parseDatFile(fileName : str):
     global UNSCRAMBLE
     print("Processing",fileName)
     start = time.time()
-    #read every line from file, ignoring header lines and produce a list of np arrays of bytes
-    with open(fileName, "r") as f:
-        allLines = f.readlines()
-        headerLines = [line for line in allLines if not line[:1].isdigit()]
-        prevUnscramble = UNSCRAMBLE
-        for line in headerLines:
-            if "{enc}" in line:
-                UNSCRAMBLE = True
-        byteLines = [
-            np.array(byteArrFromLine(line))
-            for line in allLines
-            if line[:1].isdigit()
-        ]
-        UNSCRAMBLE = prevUnscramble
+
+    if fileName.endswith(".dat"):
+        #read every line from file, ignoring header lines and produce a list of np arrays of bytes
+        with open(fileName, "r") as f:
+            allLines = f.readlines()
+            headerLines = [line for line in allLines if not line[:1].isdigit()]
+            prevUnscramble = UNSCRAMBLE
+            for line in headerLines:
+                if "{enc}" in line:
+                    UNSCRAMBLE = True
+            byteLines = [
+                np.array(byteArrFromLine(line))
+                for line in allLines
+                if line[:1].isdigit()
+            ]
+            UNSCRAMBLE = prevUnscramble
+    else:
+        with open(fileName, 'rb') as f:
+            fileHeader = f.read(12 if 'ptdw' in fileName else 11)
+            lineLength = int.from_bytes(fileHeader[-6:-4], byteorder="little", signed=False)
+            numBytesToData = int.from_bytes(fileHeader[-4:-2], byteorder="little", signed=False)
+            checkA = 0
+            checkB = 0
+            for byte in fileHeader[:-2]:
+                checkA += byte
+                checkA &= 0xFF
+                checkB += checkA
+                checkB &= 0xFF
+            if checkA != fileHeader[-2] or checkB != fileHeader[-1]:
+                print("Invalid checksum on file header of:",fileName)
+                return
+            f.read(numBytesToData)
+            data = f.read()
+            byteLines = [np.frombuffer(data[i:i+lineLength],dtype=np.uint8) for i in range(0, len(data), lineLength)]
 
     end = time.time()
     print("Time reading and converting file",end-start)
@@ -136,7 +156,7 @@ def parseDatFile(fileName : str):
             if "Unknown" not in tags[tagIDStr].keys():
                 tags[tagIDStr]["Unknown"] = []
             tags[tagIDStr]["Unknown"].append(line)
-            print("Skipping line",lineNum,"due to unknown data type")
+            print("Skipping line",lineNum,"due to unknown data type",dataType)
             skipped.append(lineNum)
             continue
         
@@ -193,14 +213,16 @@ def parseDatFile(fileName : str):
                 else:
                     df["tagID"] = int(tagIDStr[-5:])
 
+            outputFileName = fileName[:fileName.rfind(".")]+tagIDfileStr+"_"+dataType
+
             if USE_PICKLE:
-                df.to_pickle(fileName[:-4]+tagIDfileStr+"_"+dataType+".pkl")
+                df.to_pickle(outputFileName+".pkl")
             else:
                 if "datetime" in df.columns:
                     df.insert(loc=df.columns.get_loc("datetime")+1,column="time",value=df["datetime"].dt.round("1s"))
                     df["time"] = df["time"].dt.time
                     df.insert(loc=df.columns.get_loc("datetime")+1,column="date",value=df["datetime"].dt.date)
-                df.to_csv(fileName[:-4]+tagIDfileStr+"_"+dataType+".csv",index=False)
+                df.to_csv(outputFileName+".csv",index=False)
 
     end = time.time()
     print("Time writing output files",end-start)
@@ -241,7 +263,7 @@ if len(passedFiles) > 0:
 #no command line args given, auto select all dat files in current directory
 else:
     #Every file name in current directory that starts with "Obs" and ends with ".dat"
-    wantedFiles = [ROOT + f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.startswith("Obs") and f.endswith(".dat")]
+    wantedFiles = [ROOT + f for f in listdir(ROOT) if isfile(join(ROOT, f)) and ((f.startswith("Obs") and f.endswith(".dat")) or ".ptd" in f)]
 
 for fileName in wantedFiles:
     #only produce a combined file if there are more than 1 dat files

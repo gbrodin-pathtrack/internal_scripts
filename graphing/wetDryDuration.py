@@ -11,7 +11,9 @@ if USE_PICKLE:
 else:
     wantedExtension = ".csv"
 
-immersionWantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_ImmersionAccel"+wantedExtension)]
+ROOT = "./z leg rings/per species/shag/"
+
+immersionWantedFiles = [ROOT + f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.endswith("_ImmersionAccel"+wantedExtension)]
 immersionFileName = immersionWantedFiles[0]
 
 if USE_PICKLE:

@@ -5,6 +5,10 @@ from os.path import isfile, join
 
 USE_PICKLE = True
 
+CANCEL_ZERO = False
+
+TIMEOUT = 30
+
 SUBSAMPLE = 8
 
 if USE_PICKLE:
@@ -26,11 +30,24 @@ else:
     obsDF = pd.read_csv(gpsFileName)
     immDF = pd.read_csv(immFileName)
 
-obsDF["cancelledZero"] = (obsDF["numSV"] == 0) & (obsDF["TTF"] >= 5)
-obsDF["cancelledWet"] = ((obsDF["numSV"] == 0) & (obsDF["TTF"] < 5)) | ((obsDF["numSV"] > 0) & (obsDF["numSV"] < 5) & (obsDF["TTF"] < 20)) | ((obsDF["numSV"] == 5) & (obsDF["TTF"] < 5))
+failUART = obsDF.loc[obsDF["TTF"] == 250]
+print(failUART.tagID.unique())
+print(len(failUART))
 
-obsDF["cancelled"] = obsDF["cancelledZero"] | obsDF["cancelledWet"]
-obsDF["saved"] = 20 - obsDF["TTF"]
+obsDF.drop(obsDF.loc[obsDF["TTF"] == 250].index, inplace=True)
+obsDF.reset_index(drop=True, inplace=True)
+
+if CANCEL_ZERO:
+    obsDF["cancelledZero"] = (obsDF["numSV"] == 0) & (obsDF["TTF"] >= 5)
+    obsDF["cancelledWet"] = ((obsDF["numSV"] == 0) & (obsDF["TTF"] < 5)) | ((obsDF["numSV"] > 0) & (obsDF["numSV"] < 5) & (obsDF["TTF"] < TIMEOUT)) | ((obsDF["numSV"] == 5) & (obsDF["TTF"] < 5))
+
+    obsDF["cancelled"] = obsDF["cancelledZero"] | obsDF["cancelledWet"]
+    obsDF["saved"] = TIMEOUT - obsDF["TTF"]
+else:
+    obsDF["cancelledWet"] = (obsDF["numSV"] < 5) & (obsDF["TTF"] < TIMEOUT)
+
+    obsDF["cancelled"] = obsDF["cancelledWet"]
+    obsDF["saved"] = TIMEOUT - obsDF["TTF"]
 
 tagImmDFs : dict[int, pd.DataFrame] = {}
 
@@ -82,7 +99,8 @@ print("Percent triggered by single wet: %.1f%%" % ((len(singleDF) / len(obsDF)) 
 print()
 
 print("Triggered by single wet:")
-print("Percent cancelled zero: %.1f%%" % ((len(singleDF.loc[singleDF["cancelledZero"] == True]) / len(singleDF)) * 100))
+if CANCEL_ZERO:
+    print("Percent cancelled zero: %.1f%%" % ((len(singleDF.loc[singleDF["cancelledZero"] == True]) / len(singleDF)) * 100))
 print("Percent cancelled wet: %.1f%%" % ((len(singleDF.loc[singleDF["cancelledWet"] == True]) / len(singleDF)) * 100))
 print("Average cancel saving: %.2fs" % singleDF.loc[singleDF["cancelled"] == True, "saved"].mean())
 print("Success rate of non cancelled: %.1f%%" % ((len(singleDF.loc[(singleDF["numSV"] >= 5) & (singleDF["cancelled"] == False)]) / len(singleDF.loc[singleDF["cancelled"] == False])) * 100))
@@ -90,7 +108,8 @@ print("Overall success rate: %.1f%%" % ((len(singleDF.loc[singleDF["numSV"] >= 5
 
 print()
 print("Triggered by multiple wet:")
-print("Percent cancelled zero: %.1f%%" % ((len(multiDF.loc[multiDF["cancelledZero"] == True]) / len(multiDF)) * 100))
+if CANCEL_ZERO:
+    print("Percent cancelled zero: %.1f%%" % ((len(multiDF.loc[multiDF["cancelledZero"] == True]) / len(multiDF)) * 100))
 print("Percent cancelled wet: %.1f%%" % ((len(multiDF.loc[multiDF["cancelledWet"] == True]) / len(multiDF)) * 100))
 print("Average cancel saving: %.2fs" % multiDF.loc[multiDF["cancelled"] == True, "saved"].mean())
 print("Success rate of non cancelled: %.1f%%" % ((len(multiDF.loc[(multiDF["numSV"] >= 5) & (multiDF["cancelled"] == False)]) / len(multiDF.loc[multiDF["cancelled"] == False])) * 100))

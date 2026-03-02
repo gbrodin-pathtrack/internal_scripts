@@ -24,20 +24,21 @@ else:
 #convert datetime string to datetime
 obsDF["datetime"] = pd.to_datetime(obsDF["datetime"])
 
-START = 1
-STOP = 5
-STEP = 0.1
+START = 2
+STOP = 30
+STEP = 1
+MIN_SV = 1
+
+SV_TIME = "svTime_%d" % MIN_SV
 
 timeoutOptions = np.arange(START,STOP+STEP,STEP)
 timeoutDF = pd.DataFrame(timeoutOptions,columns=["timeout"])
-timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["numSV"] > 0]["TTF"]) \
-                                      + sum(obsDF.loc[(obsDF["numSV"] == 0) & (obsDF["svTime_1"] < x.timeout)]["TTF"]) \
-                                      + x.timeout*len(obsDF.loc[(obsDF["numSV"] == 0) & (obsDF["svTime_1"] >= x.timeout)]), axis=1)
-timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF["svTime_1"] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)
+timeoutDF["onTime"] = timeoutDF.apply(lambda x: sum(obsDF.loc[obsDF["numSV"] >= MIN_SV]["TTF"]) \
+                                      + sum(obsDF.loc[(obsDF["numSV"] < MIN_SV) & (obsDF[SV_TIME] < x.timeout)]["TTF"]) \
+                                      + x.timeout*len(obsDF.loc[(obsDF["numSV"] < MIN_SV) & (obsDF[SV_TIME] >= x.timeout)]), axis=1)
+timeoutDF["successes"] = timeoutDF.apply(lambda x: len(obsDF.loc[(obsDF[SV_TIME] <= x.timeout) & (obsDF["numSV"] > 4)]), axis=1)
 timeoutDF["successRate"] = (timeoutDF["successes"]/len(obsDF["TTF"]))*100
 timeoutDF["onTimePerFix"] = timeoutDF["onTime"]/timeoutDF["successes"]
-
-singleGraph = True
 
 fig, ax1 = plt.subplots()
 

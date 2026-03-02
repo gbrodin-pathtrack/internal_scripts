@@ -1,10 +1,10 @@
-SUCCESS_ON_TIME = 11.2
-FAIL_ON_TIME = 13.15
-
 QUIESCENT_CURRENT = 2 #uA
 GPS_CURRENT = 10 #mA
 
-SUCCESS_RATE = 0.58
+SUCCESS_RATE = 0.591
+
+SUCCESS_ON_TIME = 14.42
+FAIL_ON_TIME = 23.59
 
 NUM_RETRIES = [3,4]
 
@@ -32,5 +32,5 @@ for numRetries in NUM_RETRIES:
         charge = 1000 * battery
         charge -= INACTIVE_DAYS * quiescentChargePerDay
         days = charge / (gpsChargePerDay + quiescentChargePerDay)
-        print("%dmAh battery expected to last %d days" % (battery, days))
+        print("%dmAh battery expected to last %d days (~%.1f months)" % (battery, days, days/30.4))
     print()

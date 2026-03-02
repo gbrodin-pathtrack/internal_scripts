@@ -9,7 +9,7 @@ def unscramble(fileName):
         line = scrambled.readline()
         while len(line) != 0:
             if not line[:1].isdigit():
-                unscrambled.write(line)
+                unscrambled.write(line.replace("{enc}",""))
             else:
                 words = line.split()
                 unscrambled.write(" ".join([words[(i*505) % 512] for i in range(512)])+"\n")
