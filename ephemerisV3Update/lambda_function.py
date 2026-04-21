@@ -216,7 +216,7 @@ def mark_file_complete(fileName : str):
         line = original.readline()
         while line != "":
             if "END OF HEADER" in line:
-                new.write((f"PATHTRACK COMPLETE {datetime.now(timezone.utc):%Y %m %d %H %M %S}".ljust(60)+"COMMENT\n").encode("utf-8"))
+                new.write((f"PATHTRACK COMPLETE {datetime.now(timezone.utc):%Y/%m/%d-%H:%M:%S}".ljust(60)+"COMMENT\n").encode("utf-8"))
             new.write(line.encode("utf-8"))
             line = original.readline()
 
@@ -325,9 +325,8 @@ def lambda_handler(event, context):
 
         #validate files that are over a day old
         validate = delta > 1
-        print()
         print("*"*150)
-        print(f"Updating{' and validating' if validate else ''} for today -{delta} days ({day:'%Y/%j'})")
+        print(f"Updating{' and validating' if validate else ''} for today -{delta} days ({day:%Y/%j})")
         print("*"*150)
 
         ret = update(day, validate)
@@ -341,7 +340,7 @@ def lambda_handler(event, context):
             print("Ending execution as consecutive complete files found")
             return
         if not ret["complete"] and prevDayComplete:
-            print(f"ERROR file for {day:'%Y/%j'} is incomplete but file for day after is complete")
+            print(f"ERROR file for {day:%Y/%j} is incomplete but file for day after is complete")
             print("Ending execution due to error")
             return
         prevDayComplete = ret["complete"]
