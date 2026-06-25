@@ -301,6 +301,23 @@ def mirror(date : datetime):
 
     return ret
 
+def clear_logs_before(date : datetime):
+    s3 = boto3.client("s3")
+    found = True
+    while found:
+        dateTuple = date.timetuple()
+        folder = f"{dateTuple.tm_year}/{dateTuple.tm_yday:03d}/"
+        resp = s3.list_objects_v2(Bucket=os.environ["S3_BUCKET"], Prefix=folder)
+        found = 'Contents' in resp
+        if found:
+            print(f"Deleting logs {folder}")
+            files = []
+            for f in resp['Contents']:
+                files.append({"Key": f["Key"]})
+            s3.delete_objects(Bucket=os.environ["S3_BUCKET"], Delete={"Objects": files})
+            date -= timedelta(days=1)
+    return
+
 
 def lambda_handler(event, context):
     today = datetime.now(timezone.utc)
@@ -337,8 +354,11 @@ def lambda_handler(event, context):
             return
         
         if ret["complete"] and prevDayComplete:
-            print("Ending execution as consecutive complete files found")
+            print("Ready to end execution as consecutive complete files found")
+            clear_logs_before(today - timedelta(days=30))
+            print("Ending execution now old logs have been cleared")
             return
+
         if not ret["complete"] and prevDayComplete:
             print(f"ERROR file for {day:%Y/%j} is incomplete but file for day after is complete")
             print("Ending execution due to error")
