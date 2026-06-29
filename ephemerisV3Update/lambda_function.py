@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 import gzip
 import time
-from datetime import datetime, timezone, timedelta, time
+from datetime import datetime, timezone, timedelta
 if "LOCAL_TEST" not in os.environ:
     import boto3
     from botocore.exceptions import ClientError
@@ -197,8 +197,8 @@ def validate_ephemeris(ephemerides : dict[str, dict[int, list[dict]]]) -> bool:
         print("WARNING less healthy ephemerides in file than usual, typically over 400")
 
     print(f"File contains {sum(prnUnhealthy)} unhealthy ephemerides")
-    if(sum(prnUnhealthy) > 15):
-        print("WARNING over 15 unhealthy ephemerides in file")
+    if(sum(prnUnhealthy) > 20):
+        print("WARNING over 20 unhealthy ephemerides in file")
 
     if sum(1 for count in prnCount if count >= 11) >= 24:
         print("List is complete")
