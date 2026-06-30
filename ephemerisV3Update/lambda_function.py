@@ -139,10 +139,10 @@ def download_nasa_file(fileName : str, addr : str, dir : str, numRetries : int) 
         return fileName
     else:
         if numRetries == 0:
-            print("Download failed")
+            print(f"Download failed ({r.status_code}: {r.reason}), no more retries")
             return None
         else:
-            print("Download failed, retrying in 5 seconds")
+            print(f"Download failed ({r.status_code}: {r.reason}), retrying in 5 seconds")
             time.sleep(5)
             return download_nasa_file(fileName, addr, dir, numRetries-1)
 download_nasa_file.session = None
