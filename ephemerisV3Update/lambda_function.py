@@ -139,10 +139,10 @@ def download_nasa_file(fileName : str, addr : str, dir : str, numRetries : int) 
         return fileName
     else:
         if numRetries == 0:
-            print(f"Download failed ({r.status_code}: {r.reason}), no more retries")
+            print(f"Download failed ({r.status_code}: {r.reason}) no more retries")
             return None
         else:
-            print(f"Download failed ({r.status_code}: {r.reason}), retrying in 5 seconds")
+            print(f"Download failed ({r.status_code}: {r.reason}) retrying in 5 seconds")
             time.sleep(5)
             return download_nasa_file(fileName, addr, dir, numRetries-1)
 download_nasa_file.session = None
@@ -338,6 +338,10 @@ def lambda_handler(event, context):
 
     prevDayComplete = False
     for delta in range(1,7):
+        if delta == 1 and today.hour == 0:
+            print("Skipping download of yesterdays file as it won't be uploaded yet")
+            continue
+
         day = today - timedelta(days=delta)
 
         #validate files that are over a day old
