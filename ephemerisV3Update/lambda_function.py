@@ -338,7 +338,7 @@ def lambda_handler(event, context):
 
     prevDayComplete = False
     for delta in range(1,7):
-        if delta == 1 and (today.hour == 0 or today.hour == 1):
+        if delta == 1 and today.hour <= 2:
             print("Skipping download of yesterdays file as it won't be uploaded yet")
             continue
 
