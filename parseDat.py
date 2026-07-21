@@ -22,6 +22,7 @@ from parsers.parseDifferentialPressure import parseDifferentialPressureLine
 from parsers.parseGPSLegring2026 import parseGPSLegring2026
 from parsers.parseImmersion import parseImmersionLine
 from parsers.parseMagnetometer import parseMagnetometerLine
+from parsers.parseMagAccel import parseMagAccelLine
 
 USE_PICKLE = False
 
@@ -59,7 +60,8 @@ HEADERS = {0x90:parseGPSLine,
            0xDA:parseVeDBALine,
            0xE0:parseEHSolarLine,
            0xE4:parseMixedLine,
-           0xE6:parseMagnetometerLine
+           0xE6:parseMagnetometerLine,
+           0xE8:parseMagAccelLine
            }
 
 LINE_OFFSET = 6
