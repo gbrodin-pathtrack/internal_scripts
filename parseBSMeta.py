@@ -54,10 +54,20 @@ def parseBSDat(fileName):
     if len(metaArr) > 0:
         metaDF = pd.DataFrame(metaArr)
 
+        metaStatsDF = pd.DataFrame()
+        metaStatsDF["tagID"] = metaDF["tagID"].unique()
+
+        metaStatsDF["numLines"] = metaStatsDF.apply(lambda x: len(metaDF.loc[metaDF["tagID"] == x["tagID"]]), axis=1)
+        metaStatsDF["fastModeFrac"] = metaStatsDF.apply(lambda x: len(metaDF.loc[(metaDF["tagID"] == x["tagID"]) & metaDF["fastMode"]]) / x["numLines"], axis=1)
+        for signalStrength in SIGNAL_STRENGTH.values():
+            metaStatsDF[signalStrength] = metaStatsDF.apply(lambda x: len(metaDF.loc[(metaDF["tagID"] == x["tagID"]) & (metaDF["RSSI"] == signalStrength)]) / x["numLines"], axis=1)
+
         if USE_PICKLE:
             metaDF.to_pickle(fileName[:-4]+"_meta.pkl")
+            metaStatsDF.to_pickle(fileName[:-4]+"_metaStats.pkl")
         else:
             metaDF.to_csv(fileName[:-4]+"_meta.csv",index=False)
+            metaStatsDF.to_csv(fileName[:-4]+"_metaStats.csv",index=False)
 
     if len(testArr) > 0:
         testDF = pd.DataFrame(testArr)
