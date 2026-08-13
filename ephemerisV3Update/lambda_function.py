@@ -33,6 +33,14 @@ class SessionWithHeaderRedirection(requests.Session):
             if (original_parsed.hostname != redirect_parsed.hostname) and redirect_parsed.hostname != self.AUTH_HOST and original_parsed.hostname != self.AUTH_HOST:
                 del headers['Authorization']
 
+def is_valid_gzip(filename):
+    try:
+        with gzip.open(filename, "rb") as f:
+            while f.read(1024 * 1024):
+                pass
+        return True
+    except (OSError, EOFError):
+        return False
 
 def parse_RINEX_V3(rinexV3FileName):
     ret = {
@@ -40,6 +48,11 @@ def parse_RINEX_V3(rinexV3FileName):
         "complete" : False,
         "ephemerides" : {}
     }
+
+    if not is_valid_gzip(rinexV3FileName):
+        ret["error"] = f"ERROR Cannot decompress {rinexV3FileName}"
+        return ret
+
     with gzip.open(rinexV3FileName, "rt") as file:
         line = file.readline()
         while not "END OF HEADER" in line:
@@ -60,6 +73,8 @@ def parse_RINEX_V3(rinexV3FileName):
                 timestamp = datetime.strptime(line[4:23],"%Y %m %d %H %M %S")
                 for _ in range (6):
                     line = file.readline()
+                    if line == "":
+                        ret["error"] = f"ERROR EOF in middle of GPS ephemeris in {rinexV3FileName}"
                 healthy = line[26:28] == "00"
                 ephemeride = {"time": timestamp,
                               "healthy": healthy}
@@ -67,10 +82,36 @@ def parse_RINEX_V3(rinexV3FileName):
                     ret["ephemerides"]["G"][prn].append(ephemeride)
                 else:
                     ret["ephemerides"]["G"][prn] = [ephemeride]
+                line = file.readline()
+                if line == "":
+                    ret["error"] = f"ERROR EOF in middle of GPS ephemeris in {rinexV3FileName}"
             line = file.readline()
 
         return ret
 
+def parse_RINEX_V2(rinexV2FileName):
+    ret = {
+        "error" : None,
+    }
+
+    if not is_valid_gzip(rinexV2FileName):
+        ret["error"] = f"ERROR Cannot decompress {rinexV2FileName}"
+        return ret
+
+    with gzip.open(rinexV2FileName, "rt") as file:
+        line = file.readline()
+        while not "END OF HEADER" in line:
+            if line == "":
+                ret["error"] = f"ERROR End of header not found in {rinexV2FileName}"
+                return ret
+
+        while line != "":
+            for _ in range (8):
+                line = file.readline()
+                if line == "":
+                    ret["error"] = f"ERROR EOF in middle of GPS ephemeris in {rinexV2FileName}"
+
+        return ret
 
 def upload_to_s3(localFileName : str, s3fileName : str):
     print(f"Uploading {localFileName} to {s3fileName}")
@@ -294,6 +335,12 @@ def mirror(date : datetime):
     #if download failed return
     if fileName == None:
         ret["error"] = f"ERROR Failed to download hourly V2 file for {year}/{day}"
+        return ret
+
+    #attempt to parse before uploading to ensure file is valid
+    nasaRINEX = parse_RINEX_V2(os.environ["TEMP_DIR"]+"nasa/"+fileName)
+    if nasaRINEX["error"] != None:
+        ret["error"] = nasaRINEX["error"]
         return ret
     
     #upload hourly file with daily naming
