@@ -101,15 +101,19 @@ def parse_RINEX_V2(rinexV2FileName):
     with gzip.open(rinexV2FileName, "rt") as file:
         line = file.readline()
         while not "END OF HEADER" in line:
+            line = file.readline()
             if line == "":
                 ret["error"] = f"ERROR End of header not found in {rinexV2FileName}"
                 return ret
 
+        line = file.readline()
+
         while line != "":
-            for _ in range (8):
+            for _ in range (7):
                 line = file.readline()
                 if line == "":
                     ret["error"] = f"ERROR EOF in middle of GPS ephemeris in {rinexV2FileName}"
+            line = file.readline()
 
         return ret
 
