@@ -268,7 +268,7 @@ def mark_file_complete(fileName : str):
     os.remove(tempFileName)
 
 
-def update(date : datetime, validate : bool):
+def update(date : datetime, validate : bool, retries : int):
     ret = {"error": None,
            "complete": False}
     
@@ -279,7 +279,7 @@ def update(date : datetime, validate : bool):
     #download the nasa V3 file for the day
     fileName = download_daily_V3(year, day, os.environ["TEMP_DIR"]+"nasa/", 3)
 
-    #if download failed return
+    #if download failed return, don't do retry as download has it's own retries
     if fileName == None:
         ret["error"] = f"ERROR Failed to download daily V3 file for {year}/{day}"
         return ret
@@ -292,8 +292,14 @@ def update(date : datetime, validate : bool):
 
     #return early if error in parsing nasa file
     if nasaRINEX["error"] != None:
-        ret["error"] = nasaRINEX["error"]
-        return ret
+        if retries < 0:
+            print("No more retries")
+            ret["error"] = nasaRINEX["error"]
+            return ret
+        else:
+            print(f"Failed to parse daily V3 file for {year}/{day}, redownloading and retrying in 15s")
+            time.sleep(15)
+            return update(date, retries - 1)
 
     #download our copy of the file for the day
     exists = download_from_s3(f"{year}/{fileName}", os.environ["TEMP_DIR"]+"ptrack/"+fileName)
@@ -302,7 +308,7 @@ def update(date : datetime, validate : bool):
         #parse our file if it exists
         ptrackRINEX = parse_RINEX_V3(os.environ["TEMP_DIR"]+"ptrack/"+fileName)
 
-        #return error if error in parsing our file
+        #return error if error in parsing our file, don't do retry as our file should never have errors
         if ptrackRINEX["error"] != None:
             ret["error"] = ptrackRINEX["error"]
             return ret
@@ -326,7 +332,7 @@ def update(date : datetime, validate : bool):
     return ret
 
 
-def mirror(date : datetime):
+def mirror(date : datetime, retries : int):
     ret = {"error" : None}
 
     dateTuple = date.timetuple()
@@ -336,7 +342,7 @@ def mirror(date : datetime):
     #download hourly V2 file
     fileName = download_hourly_V2(year, day, os.environ["TEMP_DIR"]+"nasa/", 3)
 
-    #if download failed return
+    #if download failed return, don't do retry as download has it's own retries
     if fileName == None:
         ret["error"] = f"ERROR Failed to download hourly V2 file for {year}/{day}"
         return ret
@@ -344,8 +350,14 @@ def mirror(date : datetime):
     #attempt to parse before uploading to ensure file is valid
     nasaRINEX = parse_RINEX_V2(os.environ["TEMP_DIR"]+"nasa/"+fileName)
     if nasaRINEX["error"] != None:
-        ret["error"] = nasaRINEX["error"]
-        return ret
+        if retries < 0:
+            print("No more retries")
+            ret["error"] = nasaRINEX["error"]
+            return ret
+        else:
+            print(f"Failed to parse hourly V2 file for {year}/{day}, redownloading and retrying in 15s")
+            time.sleep(15)
+            return mirror(date, retries - 1)
     
     #upload hourly file with daily naming
     upload_to_s3(os.environ["TEMP_DIR"]+"nasa/"+fileName, f"{year}/brdc{day:03d}0.{(year % 100):02d}n.gz")
@@ -380,7 +392,7 @@ def lambda_handler(event, context):
     if today.hour == 0:
         print("Skipping mirror of todays hourly file as it is not yet 1AM and file will not be uploaded yet")
     else:
-        ret = mirror(today)
+        ret = mirror(today, 3)
 
         if ret["error"] != None:
             print(ret["error"])
@@ -401,7 +413,7 @@ def lambda_handler(event, context):
         print(f"Updating{' and validating' if validate else ''} for today -{delta} days ({day:%Y/%j})")
         print("*"*150)
 
-        ret = update(day, validate)
+        ret = update(day, validate, 3)
 
         if ret["error"] != None:
             print(ret["error"])
