@@ -24,8 +24,6 @@ from parsers.parseImmersion import parseImmersionLine
 from parsers.parseMagnetometer import parseMagnetometerLine
 from parsers.parseMagAccel import parseMagAccelLine
 
-#test comment for repo move
-
 USE_PICKLE = False
 
 UNSCRAMBLE = False
