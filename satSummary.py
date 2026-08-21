@@ -6,6 +6,8 @@ import sys
 
 USE_PICKLE = False
 
+ROOT = "./"
+
 def processSatsFile(fileName):
     #show which file is being processed
     print("*"*100)
@@ -60,7 +62,7 @@ def processSatsFile(fileName):
 class Logger(object):
     def __init__(self):
         self.terminal = sys.stdout
-        self.file = open("sat_summary.txt", "w")
+        self.file = open(ROOT+"sat_summary.txt", "w")
     def __del__(self):
         self.file.close()
     def write(self, message):
@@ -75,7 +77,7 @@ if USE_PICKLE:
 else:
     wantedExtension = ".csv"
 #get every file in root directory that ends with "_GPS"
-wantedFiles = [f for f in listdir("./") if isfile(join("./", f)) and f.endswith("_GPS_SVs"+wantedExtension)]
+wantedFiles = [ROOT + f for f in listdir(ROOT) if isfile(join(ROOT, f)) and f.endswith("_GPS_SVs"+wantedExtension) and "unique" in f]
 
 #duplicate print messages into an output file, only if there are files to process
 if len(wantedFiles) > 0:
