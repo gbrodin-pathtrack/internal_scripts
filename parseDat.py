@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, splitext
 import sys
 import time
 
@@ -29,6 +29,8 @@ USE_PICKLE = False
 UNSCRAMBLE = False
 
 ATTACH_ID = False
+
+USE_TAG_CONTACT_ID = False
 
 ROOT = "./"
 
@@ -117,7 +119,7 @@ def parseDatFile(fileName : str):
     print("Time reading and converting file",end-start)
 
     #empty dict for tag IDs
-    tags: dict[str, dict[str, list]] = {}
+    tags: dict[int, dict[str, list]] = {}
 
     start = time.time()
 
@@ -125,10 +127,16 @@ def parseDatFile(fileName : str):
 
     tagIDidx = fileName.lower().find("tag")
     loggerTagID = 0
+    uhfTagID = 0
     if tagIDidx != -1:
         loggerTagID = int(fileName[tagIDidx+3:tagIDidx+8])
 
     for lineNum, line in enumerate(byteLines):
+        #tag uhf tag ID from contact lines if configured to
+        if USE_TAG_CONTACT_ID and line[0] == 0xFD:
+            length = line[1] + (line[2]<<8)
+            uhfTagID = line[length-15] + (line[length-14]<<8) + (line[length-13]<<16) + (line[length-12]<<24)
+
         #skip old type lines and debug/blank lines
         if line[0] < 0x10  or (line[0] & 0xF0) == 0xF0:
             continue
@@ -145,21 +153,29 @@ def parseDatFile(fileName : str):
         #lineInfo = line[2]&0xF0
 
         #extract tag ID if applicable from common header
-        tagIDStr = "logger"
+        tagID = loggerTagID
         dataStart = 3
         if uhfType == 1:
-            tagIDStr = "Tag"+str(line[3] + (line[4]<<8))
+            lineTagID = line[3] + (line[4]<<8)
+            if USE_TAG_CONTACT_ID:
+                if uhfTagID & 0xFFFF != lineTagID:
+                    print("Skipping line",lineNum,"due to uhf tag ID missmatch")
+                    skipped.append(lineNum)
+                    continue
+            else:
+                uhfTagID = lineTagID
+            tagID = uhfTagID
             dataStart = 5
 
         #create entry for tag ID if needed
-        if tagIDStr not in tags.keys():
-            tags[tagIDStr] = {}
+        if tagID not in tags.keys():
+            tags[tagID] = {}
 
         #if datatype not known, add line to list of unknowns and skip
         if dataType not in HEADERS.keys():
-            if "Unknown" not in tags[tagIDStr].keys():
-                tags[tagIDStr]["Unknown"] = []
-            tags[tagIDStr]["Unknown"].append(line)
+            if "Unknown" not in tags[tagID].keys():
+                tags[tagID]["Unknown"] = []
+            tags[tagID]["Unknown"].append(line)
             print("Skipping line",lineNum,"due to unknown data type",dataType)
             skipped.append(lineNum)
             continue
@@ -186,9 +202,9 @@ def parseDatFile(fileName : str):
         
         #unpack returned data
         for dataTypeStr, parsedData in parsedDataTypes.items():
-            if dataTypeStr not in tags[tagIDStr].keys():
-                tags[tagIDStr][dataTypeStr] = []
-            tags[tagIDStr][dataTypeStr].extend(parsedData)
+            if dataTypeStr not in tags[tagID].keys():
+                tags[tagID][dataTypeStr] = []
+            tags[tagID][dataTypeStr].extend(parsedData)
 
     if(len(skipped)>0):
         print("Skipped lines:",skipped)
@@ -197,27 +213,24 @@ def parseDatFile(fileName : str):
     print("Time parsing lines",end-start)
     start = time.time()
     #generate output files for each tag for each data type
-    for tagIDStr, tagData in tags.items():
+    for tagID, tagData in tags.items():
         for dataType, obsArr in tagData.items():
             tagIDfileStr = ""
-            if tagIDStr != "logger":
-                tagIDfileStr = "_"+tagIDStr
+            if tagID != loggerTagID:
+                tagIDfileStr = f"_Tag{tagID}" if tagID <= 0xFFFF else f"_Tag{tagID:X}"
 
             #dont make CSV for unknown data types
             if dataType == "Unknown" or dataType == "Unknown_M":
-                with open(fileName[:-4]+tagIDfileStr+"_"+dataType+".txt","w") as f:
+                with open(splitext(fileName)[0]+tagIDfileStr+"_"+dataType+".txt","w") as f:
                     f.write("\n".join([" ".join(["%02X" % byte for byte in line]) for line in obsArr]))
                 continue
 
             df = pd.DataFrame(obsArr)
 
             if ATTACH_ID:
-                if tagIDStr == "logger":
-                    df["tagID"] = loggerTagID
-                else:
-                    df["tagID"] = int(tagIDStr[-5:])
+                df["tagID"] = tagID
 
-            outputFileName = fileName[:fileName.rfind(".")]+tagIDfileStr+"_"+dataType
+            outputFileName = splitext(fileName)[0]+tagIDfileStr+"_"+dataType
 
             if USE_PICKLE:
                 df.to_pickle(outputFileName+".pkl")
@@ -258,6 +271,10 @@ if "ttf1" in passedArgs:
     setSetting("DIV_TTF",1)
     passedArgs.remove("ttf1")
 
+if "contact" in passedArgs:
+    USE_TAG_CONTACT_ID = True
+    passedArgs.remove("contact")
+
 if len(passedArgs) > 0:
     print("Unrecongised arguments:",passedArgs)
 
@@ -267,7 +284,7 @@ if len(passedFiles) > 0:
 #no command line args given, auto select all dat files in current directory
 else:
     #Every file name in current directory that starts with "Obs" and ends with ".dat"
-    wantedFiles = [ROOT + f for f in listdir(ROOT) if isfile(join(ROOT, f)) and ((f.startswith("Obs") and f.endswith(".dat")) or ".ptd" in f)]
+    wantedFiles = [ROOT + f for f in listdir(ROOT) if isfile(join(ROOT, f)) and (f.endswith(".dat") or ".ptd" in f)]
 
 for fileName in wantedFiles:
     #only produce a combined file if there are more than 1 dat files
