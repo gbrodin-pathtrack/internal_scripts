@@ -1,6 +1,6 @@
 from datetime import timedelta
 import numpy as np
-from parsers.parsePackedTime import parsePackedTime, parsePackedTimeZeroSS
+from parsers.parsePackedTime import parsePackedTime
 
 def parsePressure(compressedPress):
     if compressedPress > 32000:
@@ -11,10 +11,14 @@ def parsePressure(compressedPress):
 
 def parsePressureImmersionLine(data : np.ndarray, commonHeader : np.ndarray, lineNum : int, mixed : bool) -> dict[str, list]:
     #mixed and non mixed identical
-
-    startDateTime = parsePackedTimeZeroSS(data[:5])
+    startDateTime = parsePackedTime(data[:5])
     temp = (data[5]/2) - 40
-    interval = int(data[6])
+    intervalOrFreq = int(data[6] & 0x7F)
+    freq = (data[6] & 0x80) == 0x80
+    if freq:
+        interval = 1/intervalOrFreq
+    else:
+        interval = intervalOrFreq
 
     lowerArr = data[7::2]
     upperArr = data[8::2]

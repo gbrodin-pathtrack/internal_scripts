@@ -1,6 +1,6 @@
 from datetime import timedelta
 import numpy as np
-from parsers.parsePackedTime import parsePackedTimeZeroSS
+from parsers.parsePackedTime import parsePackedTime
 from parsers.parseInt import parseUInt16
 
 def parsePressure(compressedPress):
@@ -15,10 +15,13 @@ def parseDifferentialPressureLine(data : np.ndarray, commonHeader : np.ndarray, 
         raise ValueError("No mixed implementation for differential pressure")
 
     #extract header info
-    startDateTime = parsePackedTimeZeroSS(data[:5])
-    interval = int(data[5] & 0x0F)
-    #unsupported for now, just skip past these bytes
-    extraTempBytes = int(data[5] & 0xF0)
+    startDateTime = parsePackedTime(data[:5])
+    intervalOrFreq = int(data[5] & 0x7F)
+    freq = (data[5] & 0x80) == 0x80
+    if freq:
+        interval = 1/intervalOrFreq
+    else:
+        interval = intervalOrFreq
     temp = (data[6]/2) - 40
 
     #start with invalid reference pressure
@@ -29,7 +32,7 @@ def parseDifferentialPressureLine(data : np.ndarray, commonHeader : np.ndarray, 
     refArr = []
 
     #loop over data
-    index = 7 + extraTempBytes
+    index = 7
     while index < len(data):
         #check differential bit
         if data[index] & 0x01:
