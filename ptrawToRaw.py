@@ -49,7 +49,7 @@ def convert(filename : str):
                 ran = struct.unpack('<d', ptraw.read(8))[0]
                 raw.write(f" {prn} {ran:.10f} 0 {cnr}")
 
-            raw.write("32 32.0 32\n")
+            raw.write(" 32 32.0 32\n")
 
 
 passedFiles = sys.argv[1:]
