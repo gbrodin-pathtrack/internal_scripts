@@ -127,7 +127,7 @@ def parseGPSHeartbeatLine(data : np.ndarray, commonHeader : np.ndarray, lineNum 
         raise ValueError("No mixed implementation for GPS + Heartbeat")
 
     output = {"GPS_Obs":[],"GPS_SVs":[],"GPS_Nav":[],"Heartbeat":[]}
-    index = 0
+    index = 1 #skip battery type
     while index < len(data):
         index += parseObs(data[index:], output, lineNum)
 
