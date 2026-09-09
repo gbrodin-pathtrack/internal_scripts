@@ -1,6 +1,7 @@
 from os import listdir
 from os.path import isfile, join, splitext
 import sys
+import re
 
 ROOT = "./"
 
@@ -13,14 +14,38 @@ def convertDatFile(fileName : str, uhf : bool):
     tagID = -1
 
     with open(fileName, 'r') as dat, open(splitext(fileName)[0]+extension, 'wb') as ptd:
+        matchTag = re.search(r"Tag(\d+)", fileName)
+        matchBS = re.search(r"BS(\d+)", fileName)
+        fileTagID = 65535
+        if not matchTag and not matchBS:
+            print("Couldn't get tag ID from file name, using tag ID 65535")
+        elif matchTag:
+            fileTagID = int(matchTag.group(1))
+        else:
+            fileTagID = int(matchBS.group(1))
         headerBytes = bytes([0x44, 0x58, 0x49, 0x46, #FIXD
                              0x01, #Version 1
+                             0x00, #padding
                              0x00, 0x02, #512 byte lines
-                             0x05, 0x00, #num padding bytes
-                             0x33, 0xDC, #CRC
-                             0,0,0,0,0 # padding
+                             fileTagID & 0xFF, #Device ID
+                             (fileTagID >> 8) & 0xFF,
+                             (fileTagID >> 16) & 0xFF,
+                             (fileTagID >> 24) & 0xFF,
+                             0x00, 0x00, #num padding bytes
                              ])
+
         ptd.write(headerBytes)
+
+        checkA = 0
+        checkB = 0
+
+        for byte in headerBytes:
+            checkA += byte
+            checkA &= 0xFF
+            checkB += checkA
+            checkB &= 0xFF
+
+        ptd.write(bytes([checkA, checkB]))
         while (line := dat.readline()) != "":
             if not line[:1].isdigit():
                 continue
