@@ -98,9 +98,9 @@ def parseDatFile(fileName : str):
             UNSCRAMBLE = prevUnscramble
     else:
         with open(fileName, 'rb') as f:
-            fileHeader = f.read(12 if 'ptdw' in fileName else 11)
-            lineLength = int.from_bytes(fileHeader[-6:-4], byteorder="little", signed=False)
-            numBytesToData = int.from_bytes(fileHeader[-4:-2], byteorder="little", signed=False)
+            fileHeader = f.read(16)
+            lineLength = int.from_bytes(fileHeader[6:8], byteorder="little", signed=False)
+            numBytesToData = int.from_bytes(fileHeader[12:14], byteorder="little", signed=False)
             checkA = 0
             checkB = 0
             for byte in fileHeader[:-2]:
