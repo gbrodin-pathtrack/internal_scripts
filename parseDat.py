@@ -113,7 +113,7 @@ def parseDatFile(fileName : str):
                 return
             f.read(numBytesToData)
             data = f.read()
-            byteLines = [np.frombuffer(data[i:i+lineLength],dtype=np.uint8) for i in range(0, len(data), lineLength)]
+            byteLines = [np.frombuffer(data[i:i+lineLength],dtype=np.uint8).tolist() for i in range(0, len(data), lineLength)]
 
     end = time.time()
     print("Time reading and converting file",end-start)
