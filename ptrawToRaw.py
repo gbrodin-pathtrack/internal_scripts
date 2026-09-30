@@ -35,13 +35,14 @@ def convert(filename : str):
 
         while ptraw.tell() < fileSize:
             satTime = parse64toDateTime(struct.unpack('<Q', ptraw.read(8))[0])
-            vbatt = struct.unpack('<d', ptraw.read(8))[0]
+            rawBat = struct.unpack('B', ptraw.read(1))[0]
+            ptraw.read(1) #skip batt type
             ttf = struct.unpack('<f', ptraw.read(4))[0]
             numSV = struct.unpack('B', ptraw.read(1))[0]
 
             secOfDay = (satTime - satTime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
 
-            raw.write(f"{satTime.year} {satTime.timetuple().tm_yday} {secOfDay:.1f} {vbatt:.2f} {ttf*10:.0f} {numSV}")
+            raw.write(f"{satTime.year} {satTime.timetuple().tm_yday} {secOfDay:.1f} {(rawBat+1)/50:.2f} {ttf*10:.0f} {numSV}")
 
             for i in range(numSV):
                 prn = struct.unpack('B', ptraw.read(1))[0]
