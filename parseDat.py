@@ -199,6 +199,10 @@ def parseDatFile(fileName : str):
             print("Skipping line",lineNum,"due to IndexError")
             skipped.append(lineNum)
             continue
+        except KeyError as e:
+            print("Skipping line",lineNum,"due to KeyError")
+            skipped.append(lineNum)
+            continue
         
         #unpack returned data
         for dataTypeStr, parsedData in parsedDataTypes.items():
