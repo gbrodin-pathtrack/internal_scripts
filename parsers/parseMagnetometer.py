@@ -21,7 +21,7 @@ def parseMagnetometerLine(data : np.ndarray, commonHeader : np.ndarray, lineNum 
     #fill in datetime with subseconds for now
     magnetometerValues = [{"line":lineNum,"datetime":int(ss),"X":x, "Y":y, "Z":z} for ss, x, y, z in zip(ssArr, xArr, yArr, zArr)]
 
-    if interval > 1000:
+    if interval >= 1000:
         timeStep = timedelta(milliseconds=interval)
         obsDatetime = startDateTime
         for obs in magnetometerValues:
